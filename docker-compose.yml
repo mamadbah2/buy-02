@@ -1,70 +1,98 @@
+x-healthcheck-defaults: &healthcheck-defaults
+  interval: 15s
+  timeout: 5s
+  retries: 5
+  start_period: 40s
+
+x-spring-service-defaults: &spring-service-defaults
+  deploy:
+    resources:
+      limits:
+        memory: 512M
+      reservations:
+        memory: 256M
+  restart: unless-stopped
+
+x-common-env: &common-env
+  DOCKER_EUREKA_URL: http://eureka-server:8761/eureka
+  DOCKER_CONFIG_SERVICE_URL: http://config-service:8888
+
 services:
   eureka-server:
+    <<: *spring-service-defaults
     build:
       context: ./discovery-service
       dockerfile: Dockerfile
+    container_name: eureka-server
     ports:
       - "8761:8761"
     healthcheck:
+      <<: *healthcheck-defaults
       test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
-      interval: 10s
-      retries: 5
-      start_period: 5s
+    networks:
+      - microservices-network
 
   config-service:
+    <<: *spring-service-defaults
     build:
       context: ./config-service
       dockerfile: Dockerfile
+    container_name: config-service
     ports:
       - "8888:8888"
     environment:
       - DOCKER_EUREKA_URL=http://eureka-server:8761/eureka
       - GITHUB_TOKEN=${GITHUB_TOKEN}
     healthcheck:
+      <<: *healthcheck-defaults
       test: ["CMD", "curl", "-f", "http://localhost:8888/actuator/health"]
-      interval: 10s
-      retries: 5
-      start_period: 5s
-
     depends_on:
-       eureka-server:
+      eureka-server:
         condition: service_healthy
+    networks:
+      - microservices-network
 
-  api-gateway:
+  media-service:
+    <<: *spring-service-defaults
     build:
-      context: ./api-gateway
+      context: ./media-service
       dockerfile: Dockerfile
+    container_name: media-service
     ports:
-      - "5050:5050"
+      - "8083:8083"
     environment:
-      - DOCKER_EUREKA_URL=http://eureka-server:8761/eureka
-      - DOCKER_CONFIG_SERVICE_URL=http://config-service:8888
+      <<: *common-env
+      SPRING_PROFILES_ACTIVE: prod
+      MONGODB_URI: ${MONGODB_URI}
+      MONGODB_DATABASE: ${MONGODB_DATABASE}
+      SUPABASE_PROJECT_URL: ${SUPABASE_PROJECT_URL}
+      SUPABASE_API_KEY: ${SUPABASE_API_KEY}
+      SUPABASE_BUCKET_NAME: ${SUPABASE_BUCKET_NAME}
     healthcheck:
-      test: ["CMD", "curl", "-k", "-f", "https://localhost:5050/actuator/health"]
-      interval: 10s
-      retries: 5
-      start_period: 5s
+      <<: *healthcheck-defaults
+      test: ["CMD", "curl", "-f", "http://localhost:8083/actuator/health"]
     depends_on:
       eureka-server:
         condition: service_healthy
       config-service:
         condition: service_healthy
+    networks:
+      - microservices-network
 
   product-service:
+    <<: *spring-service-defaults
     build:
       context: ./product-service
       dockerfile: Dockerfile
+    container_name: product-service
     ports:
       - "8082:8082"
     environment:
-      - DOCKER_EUREKA_URL=http://eureka-server:8761/eureka
-      - DOCKER_CONFIG_SERVICE_URL=http://config-service:8888
-      - DOCKER_MEDIA_SERVICE_URL=http://media-service:8083/api/media
+      <<: *common-env
+      DOCKER_MEDIA_SERVICE_URL: http://media-service:8083/api/media
     healthcheck:
+      <<: *healthcheck-defaults
       test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
-      interval: 10s
-      retries: 5
-      start_period: 5s
     depends_on:
       eureka-server:
         condition: service_healthy
@@ -72,94 +100,78 @@ services:
         condition: service_healthy
       media-service:
         condition: service_healthy
-      api-gateway:
-        condition: service_healthy
+    networks:
+      - microservices-network
 
   user-service:
+    <<: *spring-service-defaults
     build:
       context: ./user-service
       dockerfile: Dockerfile
+    container_name: user-service
     ports:
       - "8081:8081"
     environment:
-      - DOCKER_EUREKA_URL=http://eureka-server:8761/eureka
-      - DOCKER_CONFIG_SERVICE_URL=http://config-service:8888
+      <<: *common-env
     healthcheck:
+      <<: *healthcheck-defaults
       test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
-      interval: 10s
-      retries: 5
-      start_period: 5s
     depends_on:
       eureka-server:
         condition: service_healthy
       config-service:
         condition: service_healthy
-      api-gateway:
-        condition: service_healthy
+    networks:
+      - microservices-network
 
-
-  media-service:
+  api-gateway:
+    <<: *spring-service-defaults
     build:
-      context: ./media-service
+      context: ./api-gateway
       dockerfile: Dockerfile
+    container_name: api-gateway
     ports:
-      - "8083:8083"
+      - "5050:5050"
     environment:
-      - DOCKER_EUREKA_URL=http://eureka-server:8761/eureka
-      - DOCKER_CONFIG_SERVICE_URL=http://config-service:8888
+      <<: *common-env
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8083/actuator/health"]
-      interval: 10s
-      retries: 5
-      start_period: 5s
+      <<: *healthcheck-defaults
+      test: ["CMD", "curl", "-k", "-f", "https://localhost:5050/actuator/health"]
     depends_on:
       eureka-server:
         condition: service_healthy
       config-service:
         condition: service_healthy
-      api-gateway:
+      user-service:
         condition: service_healthy
-
-  order-service:
-    build:
-      context: ./order-service
-      dockerfile: Dockerfile
-    ports:
-      - "8084:8084"
-    environment:
-      - DOCKER_EUREKA_URL=http://eureka-server:8761/eureka
-      - DOCKER_CONFIG_SERVICE_URL=http://config-service:8888
-      - DOCKER_PRODUCT_SERVICE_URL=http://product-service:8082/api/products
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8084/actuator/health"]
-      interval: 10s
-      retries: 5
-      start_period: 5s
-    depends_on:
-      eureka-server:
+      product-service:
         condition: service_healthy
-      config-service:
+      media-service:
         condition: service_healthy
-      api-gateway:
-        condition: service_healthy
+    networks:
+      - microservices-network
 
   frontend:
     build:
       context: ./buy-01-frontend
       dockerfile: Dockerfile
+    container_name: frontend
     ports:
       - "4200:80"
       - "8443:443"
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+    restart: unless-stopped
     depends_on:
-      eureka-server:
-        condition: service_healthy
-      user-service:
-        condition: service_healthy
-      media-service:
-        condition: service_healthy
-      config-service:
-        condition: service_healthy
-      product-service:
-        condition: service_healthy
       api-gateway:
         condition: service_healthy
+    networks:
+      - microservices-network
+
+networks:
+  microservices-network:
+    driver: bridge

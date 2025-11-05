@@ -12,3 +12,6 @@ mvn clean package -DskipTests=false sonar:sonar                                 
 
 Suppr tous les containers sauf celui de sonarqube
 docker ps -aq | grep -v "$(docker ps -aq --filter ancestor=sonarqube)" | xargs docker rm -f
+
+Sauf Sonarqube et PostgreSQL
+docker ps -q | grep -v -e 087456d7d4e1 -e e0a1d54e6cf4 | xargs docker stop

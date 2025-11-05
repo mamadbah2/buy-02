@@ -1,128 +1,195 @@
+# Anchors YAML pour éviter la répétition
+# Note: Utiliser PROJECT_NAME dans les noms d'images (défini comme variable d'environnement)
+# Exemple: export PROJECT_NAME=safe-zone
+
+x-healthcheck-defaults: &healthcheck-defaults
+  interval: 15s
+  timeout: 10s
+  retries: 5
+  start_period: 40s
+
+x-spring-service-defaults: &spring-service-defaults
+  restart: unless-stopped
+  deploy:
+    resources:
+      limits:
+        cpus: '1'
+        memory: 512M
+      reservations:
+        cpus: '0.25'
+        memory: 256M
+  logging:
+    driver: "json-file"
+    options:
+      max-size: "10m"
+      max-file: "3"
+
+x-common-env: &common-env
+  DOCKER_EUREKA_URL: http://eureka-server:8761/eureka
+  DOCKER_CONFIG_SERVICE_URL: http://config-service:8888
+
+networks:
+  microservices-network:
+    driver: bridge
+
 services:
   eureka-server:
-    image: mamadbah2/eureka-server:${IMAGE_VERSION}
+    <<: *spring-service-defaults
+    image: ${DOCKER_HUB_USER:-mamadbah2}/${PROJECT_NAME:-safe-zone}-eureka-server:${IMAGE_VERSION}
+    container_name: eureka-server-prod
     ports:
       - "8761:8761"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
     healthcheck:
+      <<: *healthcheck-defaults
       test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
-      interval: 10s
-      retries: 5
-      start_period: 5s
+    networks:
+      - microservices-network
 
   config-service:
-    image: mamadbah2/config-service:${IMAGE_VERSION}
+    <<: *spring-service-defaults
+    image: ${DOCKER_HUB_USER:-mamadbah2}/${PROJECT_NAME:-safe-zone}-config-service:${IMAGE_VERSION}
+    container_name: config-service-prod
     ports:
       - "8888:8888"
     environment:
-      - DOCKER_EUREKA_URL=http://eureka-server:8761/eureka
-      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      <<: *common-env
+      GITHUB_TOKEN: ${GITHUB_TOKEN}
+      SPRING_PROFILES_ACTIVE: prod
     healthcheck:
+      <<: *healthcheck-defaults
       test: ["CMD", "curl", "-f", "http://localhost:8888/actuator/health"]
-      interval: 10s
-      retries: 5
-      start_period: 5s
-
-    depends_on:
-       eureka-server:
-        condition: service_healthy
-
-  api-gateway:
-    image: mamadbah2/api-gateway:${IMAGE_VERSION}
-    ports:
-      - "5050:5050"
-    environment:
-      - DOCKER_EUREKA_URL=http://eureka-server:8761/eureka
-      - DOCKER_CONFIG_SERVICE_URL=http://config-service:8888
-    healthcheck:
-      test: ["CMD", "curl", "-k", "-f", "https://localhost:5050/actuator/health"]
-      interval: 10s
-      retries: 5
-      start_period: 5s
     depends_on:
       eureka-server:
         condition: service_healthy
-      config-service:
-        condition: service_healthy
-
-  product-service:
-    image: mamadbah2/product-service:${IMAGE_VERSION}
-    ports:
-      - "8082:8082"
-    environment:
-      - DOCKER_EUREKA_URL=http://eureka-server:8761/eureka
-      - DOCKER_CONFIG_SERVICE_URL=http://config-service:8888
-      - DOCKER_MEDIA_SERVICE_URL=http://media-service:8083/api/media
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
-      interval: 10s
-      retries: 5
-      start_period: 5s
-    depends_on:
-      eureka-server:
-        condition: service_healthy
-      config-service:
-        condition: service_healthy
-      media-service:
-        condition: service_healthy
-      api-gateway:
-        condition: service_healthy
-
-  user-service:
-    image: mamadbah2/user-service:${IMAGE_VERSION}
-    ports:
-      - "8081:8081"
-    environment:
-      - DOCKER_EUREKA_URL=http://eureka-server:8761/eureka
-      - DOCKER_CONFIG_SERVICE_URL=http://config-service:8888
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
-      interval: 10s
-      retries: 5
-      start_period: 5s
-    depends_on:
-      eureka-server:
-        condition: service_healthy
-      config-service:
-        condition: service_healthy
-      api-gateway:
-        condition: service_healthy
-
+    networks:
+      - microservices-network
 
   media-service:
-    image: mamadbah2/media-service:${IMAGE_VERSION}
+    <<: *spring-service-defaults
+    image: ${DOCKER_HUB_USER:-mamadbah2}/${PROJECT_NAME:-safe-zone}-media-service:${IMAGE_VERSION}
+    container_name: media-service-prod
     ports:
       - "8083:8083"
     environment:
-      - DOCKER_EUREKA_URL=http://eureka-server:8761/eureka
-      - DOCKER_CONFIG_SERVICE_URL=http://config-service:8888
+      <<: *common-env
+      SPRING_PROFILES_ACTIVE: prod
+      MONGODB_URI: ${MONGODB_URI}
+      MONGODB_DATABASE: ${MONGODB_DATABASE}
+      SUPABASE_PROJECT_URL: ${SUPABASE_PROJECT_URL}
+      SUPABASE_API_KEY: ${SUPABASE_API_KEY}
+      SUPABASE_BUCKET_NAME: ${SUPABASE_BUCKET_NAME}
     healthcheck:
+      <<: *healthcheck-defaults
       test: ["CMD", "curl", "-f", "http://localhost:8083/actuator/health"]
-      interval: 10s
-      retries: 5
-      start_period: 5s
     depends_on:
       eureka-server:
         condition: service_healthy
       config-service:
         condition: service_healthy
-      api-gateway:
-        condition: service_healthy
+    networks:
+      - microservices-network
 
-  frontend:
-    image: mamadbah2/frontend:${IMAGE_VERSION}
+  product-service:
+    <<: *spring-service-defaults
+    image: ${DOCKER_HUB_USER:-mamadbah2}/${PROJECT_NAME:-safe-zone}-product-service:${IMAGE_VERSION}
+    container_name: product-service-prod
     ports:
-      - "4200:80"
-      - "8443:443"
+      - "8082:8082"
+    environment:
+      <<: *common-env
+      DOCKER_MEDIA_SERVICE_URL: http://media-service:8083/api/media
+      SPRING_PROFILES_ACTIVE: prod
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
     depends_on:
       eureka-server:
         condition: service_healthy
-      user-service:
+      config-service:
         condition: service_healthy
       media-service:
         condition: service_healthy
+    networks:
+      - microservices-network
+
+  user-service:
+    <<: *spring-service-defaults
+    image: ${DOCKER_HUB_USER:-mamadbah2}/${PROJECT_NAME:-safe-zone}-user-service:${IMAGE_VERSION}
+    container_name: user-service-prod
+    ports:
+      - "8081:8081"
+    environment:
+      <<: *common-env
+      SPRING_PROFILES_ACTIVE: prod
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
+    depends_on:
+      eureka-server:
+        condition: service_healthy
       config-service:
+        condition: service_healthy
+    networks:
+      - microservices-network
+
+  api-gateway:
+    <<: *spring-service-defaults
+    image: ${DOCKER_HUB_USER:-mamadbah2}/${PROJECT_NAME:-safe-zone}-api-gateway:${IMAGE_VERSION}
+    container_name: api-gateway-prod
+    ports:
+      - "5050:5050"
+    environment:
+      <<: *common-env
+      SPRING_PROFILES_ACTIVE: prod
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "curl", "-k", "-f", "https://localhost:5050/actuator/health"]
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      config-service:
+        condition: service_healthy
+      media-service:
         condition: service_healthy
       product-service:
         condition: service_healthy
+      user-service:
+        condition: service_healthy
+    networks:
+      - microservices-network
+
+  frontend:
+    image: ${DOCKER_HUB_USER:-mamadbah2}/${PROJECT_NAME:-safe-zone}-frontend:${IMAGE_VERSION}
+    container_name: frontend-prod
+    restart: unless-stopped
+    ports:
+      - "4200:80"
+      - "8443:443"
+    environment:
+      - NODE_ENV=production
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.1'
+          memory: 128M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    depends_on:
       api-gateway:
         condition: service_healthy
+    networks:
+      - microservices-network
