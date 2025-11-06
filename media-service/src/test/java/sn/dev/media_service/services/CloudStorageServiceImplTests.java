@@ -8,7 +8,6 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.client.RestTemplate;
 import sn.dev.media_service.services.impl.CloudStorageServiceImpl;
 
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -21,7 +20,8 @@ public class CloudStorageServiceImplTests {
 
     @BeforeEach
     void setUp() {
-        cloudStorageService = new CloudStorageServiceImpl();
+        restTemplate = Mockito.mock(RestTemplate.class);
+        cloudStorageService = new CloudStorageServiceImpl(restTemplate);
 
         // inject valeurs @Value manuellement
         cloudStorageService.projectUrl = "http://localhost:8000";
@@ -29,8 +29,8 @@ public class CloudStorageServiceImplTests {
         cloudStorageService.bucketName = "test-bucket";
 
         // mock RestTemplate
-        restTemplate = Mockito.mock(RestTemplate.class);
-        cloudStorageService.restTemplate = restTemplate;
+//        restTemplate = Mockito.mock(RestTemplate.class);
+//        cloudStorageService.restTemplate = restTemplate;
     }
 
     @Test

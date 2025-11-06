@@ -198,7 +198,7 @@ pipeline {
                                 "SUPABASE_API_KEY=${env.SUPABASE_API_KEY}",
                                 "SUPABASE_BUCKET_NAME=${env.SUPABASE_BUCKET_NAME}",
                                 "MONGODB_URI=${env.MONGODB_URI}",
-                                "MONGODB_DATABASE=${env.MONGODB_DATABASE}"
+                                "MONGODB_DATABASE=${env.MONGODB_DATABASE}"updateCart
                             ]) {
                                 sh '''
                                     docker-compose up -d
