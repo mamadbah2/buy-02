@@ -3,6 +3,10 @@ package sn.dev.product_service.web.controllers.impl;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -55,22 +59,42 @@ public class ProductControllerImpl implements ProductController {
     }
 
     @Override
-    public ResponseEntity<List<ProductResponseDTO>> getAll() {
-        System.out.println("GET(getAll) products");
+    public ResponseEntity<Page<ProductResponseDTO>> getAll(
+        int page,
+        int size,
+        String sortBy,
+        String sortDirection
+    ) {
+        System.out.println(
+            String.format(
+                "GET(getAll) products - page: %d, size: %d, sortBy: %s, direction: %s",
+                page, size, sortBy, sortDirection
+            )
+        );
 
-        List<Product> products = productService.getAll();
-        List<ProductResponseDTO> responseList = products
-            .stream()
-            .map(product -> {
-                List<Media> medias = mediaServiceClient
-                    .getByProductId(product.getId())
-                    .getBody();
+        // Créer l'objet Sort
+        Sort.Direction direction = sortDirection.equalsIgnoreCase("ASC")
+            ? Sort.Direction.ASC
+            : Sort.Direction.DESC;
+        Sort sort = Sort.by(direction, sortBy);
 
-                return new ProductResponseDTO(product, medias);
-            })
-            .toList();
+        // Créer l'objet Pageable
+        Pageable pageable = PageRequest.of(page, size, sort);
 
-        return ResponseEntity.ok(responseList);
+        // Récupérer les produits paginés
+        Page<Product> productsPage = productService.getAll(pageable);
+
+        // Mapper vers ProductResponseDTO
+        Page<ProductResponseDTO> responsePage = productsPage.map(product -> {
+            List<Media> medias = mediaServiceClient
+                .getByProductId(product.getId())
+                .getBody();
+            return new ProductResponseDTO(product, medias);
+        });
+
+        return ResponseEntity.ok()
+            .header(HttpHeaders.CACHE_CONTROL, "public, max-age=" + maxAge)
+            .body(responsePage);
     }
 
     @Override
@@ -81,6 +105,88 @@ public class ProductControllerImpl implements ProductController {
         List<Media> medias = mediaServiceClient.getByProductId(id).getBody();
 
         return ResponseEntity.ok(new ProductResponseDTO(product, medias));
+    }
+
+    @Override
+    public ResponseEntity<Page<ProductResponseDTO>> getBySellerId(
+        String sellerId,
+        int page,
+        int size,
+        String sortBy,
+        String sortDirection
+    ) {
+        System.out.println(
+            String.format(
+                "GET(products by seller) sellerId: %s - page: %d, size: %d, sortBy: %s, direction: %s",
+                sellerId, page, size, sortBy, sortDirection
+            )
+        );
+
+        // Créer l'objet Sort
+        Sort.Direction direction = sortDirection.equalsIgnoreCase("ASC")
+            ? Sort.Direction.ASC
+            : Sort.Direction.DESC;
+        Sort sort = Sort.by(direction, sortBy);
+
+        // Créer l'objet Pageable
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        // Récupérer les produits du vendeur paginés
+        Page<Product> productsPage = productService.getByUserId(sellerId, pageable);
+
+        // Mapper vers ProductResponseDTO
+        Page<ProductResponseDTO> responsePage = productsPage.map(product -> {
+            List<Media> medias = mediaServiceClient
+                .getByProductId(product.getId())
+                .getBody();
+            return new ProductResponseDTO(product, medias);
+        });
+
+        return ResponseEntity.ok()
+            .header(HttpHeaders.CACHE_CONTROL, "public, max-age=" + maxAge)
+            .body(responsePage);
+    }
+
+    @Override
+    public ResponseEntity<Page<ProductResponseDTO>> search(
+        String query,
+        Double minPrice,
+        Double maxPrice,
+        int page,
+        int size,
+        String sortBy,
+        String sortDirection
+    ) {
+        System.out.println(
+            String.format(
+                "SEARCH products - query: '%s', minPrice: %s, maxPrice: %s, page: %d, size: %d",
+                query, minPrice, maxPrice, page, size
+            )
+        );
+
+        // Créer l'objet Sort
+        Sort.Direction direction = sortDirection.equalsIgnoreCase("ASC")
+            ? Sort.Direction.ASC
+            : Sort.Direction.DESC;
+        Sort sort = Sort.by(direction, sortBy);
+
+        // Créer l'objet Pageable
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        // Rechercher les produits
+        Page<Product> productsPage = productService.search(query, minPrice, maxPrice, pageable);
+
+        // Mapper vers ProductResponseDTO
+        Page<ProductResponseDTO> responsePage = productsPage.map(product -> {
+            List<Media> medias = mediaServiceClient
+                .getByProductId(product.getId())
+                .getBody();
+            return new ProductResponseDTO(product, medias);
+        });
+
+        return ResponseEntity.ok()
+            .header(HttpHeaders.CACHE_CONTROL, "public, max-age=" + maxAge)
+            .body(responsePage);
     }
 
     @Override

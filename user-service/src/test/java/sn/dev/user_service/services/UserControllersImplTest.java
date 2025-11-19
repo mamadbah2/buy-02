@@ -5,6 +5,10 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.User;
@@ -104,10 +108,14 @@ class UserControllersImplTest {
         user2.setEmail("jane@example.com");
         user2.setRole(Role.CLIENT);
 
-        when(userServices.findAllUsers()).thenReturn(List.of(user1, user2));
+        List<sn.dev.user_service.data.entities.User> users = List.of(user1, user2);
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<sn.dev.user_service.data.entities.User> userPage = new PageImpl<>(users, pageable, users.size());
 
-        // when
-        ResponseEntity<CollectionModel<UserResponse>> response = userControllers.getUsers();
+        when(userServices.findAllUsers(any(Pageable.class))).thenReturn(userPage);
+
+        // when - avec les paramètres de pagination
+        ResponseEntity<CollectionModel<UserResponse>> response = userControllers.getUsers(0, 10, "id", "asc");
 
         // then
         assertEquals(200, response.getStatusCodeValue());

@@ -1,14 +1,18 @@
 package sn.dev.user_service.services.impl;
 
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import sn.dev.user_service.data.entities.User;
 import sn.dev.user_service.data.repositories.UserRepositories;
+import sn.dev.user_service.exceptions.UserAlreadyExistsException;
 import sn.dev.user_service.services.JWTServices;
 import sn.dev.user_service.services.UserServices;
 
@@ -22,6 +26,7 @@ public class UserServicesImpl implements UserServices {
     private final UserRepositories userRepositories;
     private final JWTServices jwtServices;
     private final AuthenticationManager authenticationManager;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public String login(User user) {
@@ -57,5 +62,24 @@ public class UserServicesImpl implements UserServices {
     @Override
     public List<User> findAllUsers() {
         return userRepositories.findAll();
+    }
+
+    @Override
+    public Page<User> findAllUsers(Pageable pageable) {
+        return userRepositories.findAll(pageable);
+    }
+
+    @Override
+    public User createUser(User user) {
+        // Vérifier si l'email existe déjà
+        if (userRepositories.findByEmail(user.getEmail()).isPresent()) {
+            throw new UserAlreadyExistsException("User already exists with email: " + user.getEmail());
+        }
+
+        // Encoder le mot de passe
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+
+        // Sauvegarder et retourner l'utilisateur
+        return userRepositories.save(user);
     }
 }

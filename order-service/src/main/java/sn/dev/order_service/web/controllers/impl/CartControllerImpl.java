@@ -13,8 +13,6 @@ import sn.dev.order_service.web.dto.OrderResponseDto;
 import sn.dev.order_service.web.mappers.OrdersItemsMappers;
 import sn.dev.order_service.web.mappers.OrdersMappers;
 
-import java.util.logging.Logger;
-
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -22,17 +20,19 @@ public class CartControllerImpl implements CartController {
     private final OrderService orderService;
     private final OrdersItemsMappers ordersItemsMappers;
     private final OrdersMappers ordersMappers;
-    Logger logger = Logger.getLogger(getClass().getName());
 
+    // Get the cart of the current user
     @Override
-    public ResponseEntity<String> testCart() {
-        logger.info("TEST cart endpoint called");
-        return ResponseEntity.ok("Cart service is up and running!");
+    public ResponseEntity<OrderResponseDto> getUserCart(String id) {
+        log.info("GET cart for user: {}", id);
+        Order order = orderService.getCartByUserId(id);
+        OrderResponseDto response = ordersMappers.toResponse(order);
+        return ResponseEntity.ok(response);
     }
 
     @Override
     public ResponseEntity<OrderResponseDto> updateCart(String id, OrderItemRequestDto orderItemRequestDto) {
-        logger.info("UPDATE cart item in order: " + id);
+        log.info("UPDATE cart item in order: {}", id);
         OrderItem item = ordersItemsMappers.toEntity(orderItemRequestDto);
         Order updated = orderService.updateCart(id, item);
         return ResponseEntity.ok(ordersMappers.toResponse(updated));

@@ -88,6 +88,11 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+			<groupId>net.datafaker</groupId>
+			<artifactId>datafaker</artifactId>
+			<version>2.5.3</version>
+		</dependency>
+		<dependency>
 			<groupId>org.jacoco</groupId>
 			<artifactId>jacoco-maven-plugin</artifactId>
 			<version>0.8.13</version>

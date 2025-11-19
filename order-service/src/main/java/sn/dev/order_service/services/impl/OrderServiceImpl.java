@@ -101,6 +101,13 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    public Order getCartByUserId(String userId) {
+        return orderRepository.findByUserIdAndStatus(userId, "CART")
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "No active cart found for user: " + userId));
+    }
+
+    @Override
     public Order update(Order order) {
         return orderRepository.save(order);
     }
