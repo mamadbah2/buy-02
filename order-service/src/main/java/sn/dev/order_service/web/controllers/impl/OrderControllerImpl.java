@@ -2,7 +2,6 @@ package sn.dev.order_service.web.controllers.impl;
 
 import jakarta.validation.Valid;
 import java.util.List;
-import java.util.logging.Logger;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +17,7 @@ import sn.dev.order_service.data.entities.Order;
 import sn.dev.order_service.services.OrderService;
 import sn.dev.order_service.web.controllers.OrderController;
 import sn.dev.order_service.web.dto.OrderRequestDto;
+import sn.dev.order_service.web.dto.OrderPatchDto;
 import sn.dev.order_service.web.dto.OrderResponseDto;
 import sn.dev.order_service.web.mappers.OrdersMappers;
 
@@ -28,29 +28,27 @@ public class OrderControllerImpl implements OrderController {
 
     private final OrderService orderService;
     private final OrdersMappers ordersMappers;
-    private final String maxAge = "300";
+    private static final String MAX_AGE = "300";
     private static final String USERIDSTR = "userID";
-    Logger logger = Logger.getLogger(getClass().getName());
 
     @Override
     public ResponseEntity<OrderResponseDto> create(
         @Valid OrderRequestDto orderRequestDto
     ) {
-        logger.info("CREATE order : " + orderRequestDto);
-
+        log.info("CREATE order : {}", orderRequestDto);
 
         Order order = orderService.create(
             ordersMappers.toEntity(orderRequestDto)
         );
 
         return ResponseEntity.status(HttpStatus.CREATED)
-            .header(HttpHeaders.CACHE_CONTROL, "public, max-age=" + maxAge)
+            .header(HttpHeaders.CACHE_CONTROL, "public, max-age=" + MAX_AGE)
             .body(ordersMappers.toResponse(order));
     }
 
     @Override
     public ResponseEntity<List<OrderResponseDto>> getAll() {
-        logger.info("GET(getAll) orders");
+        log.info("GET(getAll) orders");
 
         List<Order> orders = orderService.getAll();
         List<OrderResponseDto> responseList = orders
@@ -63,7 +61,7 @@ public class OrderControllerImpl implements OrderController {
 
     @Override
     public ResponseEntity<List<OrderResponseDto>> getByUserId(String userId) {
-        logger.info("GET orders by userId: " + userId);
+        log.info("GET orders by userId: {}", userId);
 
         List<Order> orders = orderService.getByUserId(userId);
         List<OrderResponseDto> responseList = orders
@@ -76,7 +74,7 @@ public class OrderControllerImpl implements OrderController {
 
     @Override
     public ResponseEntity<OrderResponseDto> getById(String id) {
-        logger.info("GET(order by id) order with id: " + id);
+        log.info("GET(order by id) order with id: {}", id);
 
         Order order = orderService.getById(id);
 
@@ -85,10 +83,10 @@ public class OrderControllerImpl implements OrderController {
 
     @Override
     public ResponseEntity<OrderResponseDto> update(
-        @Valid OrderRequestDto orderRequestDto,
+        @Valid OrderPatchDto orderPatchDto,
         String id
     ) {
-        logger.info("UPDATE(order by id) order with id: " + id);
+        log.info("UPDATE(order by id) order with id: {}", id);
         Order order = orderService.getById(id);
 
         // Connected User
@@ -104,20 +102,19 @@ public class OrderControllerImpl implements OrderController {
             );
         }
 
-        Order orderToUpdate = ordersMappers.toEntity(orderRequestDto);
-        orderToUpdate.setId(id);
+        // Update only the status field for PATCH operation
+        order.setStatus(orderPatchDto.getStatus());
 
-        Order updatedOrder = orderService.update(orderToUpdate);
-
+        Order updatedOrder = orderService.update(order);
 
         return ResponseEntity.ok()
-            .header(HttpHeaders.CACHE_CONTROL, "public, max-age=" + maxAge)
+            .header(HttpHeaders.CACHE_CONTROL, "public, max-age=" + MAX_AGE)
             .body(ordersMappers.toResponse(updatedOrder));
     }
 
     @Override
     public ResponseEntity<Void> delete(String id) {
-        logger.info("DELETE(order by id) order with id: " + id);
+        log.info("DELETE(order by id) order with id: {}", id);
         Order order = orderService.getById(id);
 
         Authentication auth =

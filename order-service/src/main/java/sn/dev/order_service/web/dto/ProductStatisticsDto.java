@@ -1,6 +1,5 @@
 package sn.dev.order_service.web.dto;
 
-import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,8 +9,10 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderPatchDto {
-    @NotBlank(message = "Status cannot be blank")
-    private String status;
+public class ProductStatisticsDto {
+    private String productId;
+    private String productName;
+    private Integer totalQuantity;
+    private Double totalRevenue;
+    private Long orderCount;
 }
-
