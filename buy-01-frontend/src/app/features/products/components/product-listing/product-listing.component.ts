@@ -6,6 +6,15 @@ import { AuthService } from "../../../../auth/services/auth.service";
 import { CommonModule } from "@angular/common";
 import { JwtService } from "../../../../shared/services/jwt.service";
 
+interface PaginationState {
+  totalElements: number;
+  totalPages: number;
+  currentPage: number;
+  pageSize: number;
+  isFirst: boolean;
+  isLast: boolean;
+}
+
 @Component({
   selector: "app-product-listing",
   imports: [RouterLink, CommonModule],
@@ -13,12 +22,23 @@ import { JwtService } from "../../../../shared/services/jwt.service";
   styleUrl: "./product-listing.component.css",
 })
 export class ProductListingComponent implements OnInit {
-  allProducts: ProductModels[] | null = null;
-  filteredProducts: ProductModels[] | null = null;
+  allProducts: ProductModels[] = [];
+  filteredProducts: ProductModels[] = [];
   currentUser: any = null;
   isLoading = false;
-  selectedSort: string = "";
+  selectedSort: "" | "name" | "price" = "";
+  sortDirection: "ASC" | "DESC" = "DESC";
   searchTerm: string = "";
+  readonly pageSizeOptions = [12, 20, 36];
+  private readonly defaultPageSize = 20;
+  pagination: PaginationState = {
+    totalElements: 0,
+    totalPages: 0,
+    currentPage: 0,
+    pageSize: this.defaultPageSize,
+    isFirst: true,
+    isLast: true,
+  };
 
   private productService = inject(ProductService);
   private authService = inject(AuthService);
@@ -50,23 +70,40 @@ export class ProductListingComponent implements OnInit {
     }
   }
 
-  private loadProducts() {
+  private loadProducts(page: number = this.pagination.currentPage) {
     this.isLoading = true;
-    this.productService.getProductList().subscribe({
-      next: (value) => {
-        console.log("Products loaded successfully:");
-        this.allProducts = value;
-        this.filteredProducts = value;
-        this.isLoading = false;
-        console.log(value);
-      },
-      error: (err) => {
-        console.error("Error loading products:", err);
-        this.isLoading = false;
-        this.allProducts = [];
-        this.filteredProducts = [];
-      },
-    });
+    const safePage = Math.max(0, page);
+    const sortField = this.selectedSort || "id";
+
+    this.productService
+      .getProductList({
+        page: safePage,
+        size: this.pagination.pageSize,
+        sortBy: sortField,
+        sortDirection: this.sortDirection,
+      })
+      .subscribe({
+        next: (response) => {
+          console.log("Products loaded successfully:");
+          this.pagination = {
+            totalElements: response.totalElements,
+            totalPages: response.totalPages,
+            currentPage: response.number,
+            pageSize: response.size,
+            isFirst: response.first,
+            isLast: response.last,
+          };
+          this.allProducts = response.content ?? [];
+          this.isLoading = false;
+          this.applyFilters();
+        },
+        error: (err) => {
+          console.error("Error loading products:", err);
+          this.isLoading = false;
+          this.allProducts = [];
+          this.filteredProducts = [];
+        },
+      });
   }
 
   get isGuest(): boolean {
@@ -131,54 +168,62 @@ export class ProductListingComponent implements OnInit {
   }
 
   sortProducts(sortBy: "name" | "price") {
-    if (!this.filteredProducts) return;
+    if (this.selectedSort === sortBy) {
+      this.sortDirection = this.sortDirection === "ASC" ? "DESC" : "ASC";
+    } else {
+      this.selectedSort = sortBy;
+      this.sortDirection = sortBy === "name" ? "ASC" : "DESC";
+    }
 
-    this.selectedSort = sortBy;
-    this.filteredProducts.sort((a, b) => {
-      switch (sortBy) {
-        case "name":
-          return a.name.localeCompare(b.name);
-        case "price":
-          return Number(a.price) - Number(b.price);
-        default:
-          return 0;
-      }
-    });
+    this.loadProducts(0);
   }
 
   // Method to refresh products
   refreshProducts() {
-    this.allProducts = null;
-    this.filteredProducts = null;
+    this.allProducts = [];
+    this.filteredProducts = [];
     this.selectedSort = "";
+    this.sortDirection = "DESC";
     this.searchTerm = "";
+    this.pagination = {
+      totalElements: 0,
+      totalPages: 0,
+      currentPage: 0,
+      pageSize: this.defaultPageSize,
+      isFirst: true,
+      isLast: true,
+    };
     this.loadProducts();
   }
 
   // Search functionality
   onSearch(term: string) {
-    this.searchTerm = term.toLowerCase();
-    this.filterProducts();
+    this.searchTerm = term.trim().toLowerCase();
+    this.applyFilters();
   }
 
-  private filterProducts() {
-    if (!this.allProducts) return;
+  private applyFilters() {
+    const term = this.searchTerm.trim().toLowerCase();
+    let products = [...this.allProducts];
 
-    if (!this.searchTerm) {
-      this.filteredProducts = [...this.allProducts];
-    } else {
-      this.filteredProducts = this.allProducts.filter(
+    if (term) {
+      products = products.filter(
         (product) =>
-          product.name.toLowerCase().includes(this.searchTerm) ||
+          product.name.toLowerCase().includes(term) ||
           (product.description &&
-            product.description.toLowerCase().includes(this.searchTerm)),
+            product.description.toLowerCase().includes(term)),
       );
     }
 
-    // Reapply sort if one was selected
     if (this.selectedSort) {
-      this.sortProducts(this.selectedSort as "name" | "price");
+      const activeSort = this.selectedSort;
+      products.sort((a, b) => this.compareProducts(a, b, activeSort));
+      if (this.sortDirection === "DESC") {
+        products.reverse();
+      }
     }
+
+    this.filteredProducts = products;
   }
 
   // Track by function for better performance
@@ -191,5 +236,69 @@ export class ProductListingComponent implements OnInit {
     // This would typically check a createdAt date
     // For now, return false as we don't have that field
     return false;
+  }
+
+  get rangeStart(): number {
+    if (!this.pagination.totalElements) {
+      return 0;
+    }
+    return this.pagination.currentPage * this.pagination.pageSize + 1;
+  }
+
+  get rangeEnd(): number {
+    if (!this.pagination.totalElements) {
+      return 0;
+    }
+    return Math.min(
+      (this.pagination.currentPage + 1) * this.pagination.pageSize,
+      this.pagination.totalElements,
+    );
+  }
+
+  get hasMultiplePages(): boolean {
+    return this.pagination.totalPages > 1;
+  }
+
+  nextPage(): void {
+    if (this.pagination.isLast || this.isLoading) return;
+    this.loadProducts(this.pagination.currentPage + 1);
+  }
+
+  previousPage(): void {
+    if (this.pagination.isFirst || this.isLoading) return;
+    this.loadProducts(this.pagination.currentPage - 1);
+  }
+
+  onPageSizeChange(size: string): void {
+    const newSize = Number(size);
+    if (!newSize || newSize === this.pagination.pageSize) return;
+    this.pagination.pageSize = newSize;
+    this.loadProducts(0);
+  }
+
+  goToPage(page: number): void {
+    if (
+      page < 0 ||
+      page >= this.pagination.totalPages ||
+      page === this.pagination.currentPage
+    ) {
+      return;
+    }
+    this.loadProducts(page);
+  }
+
+  private compareProducts(
+    a: ProductModels,
+    b: ProductModels,
+    sortBy: "name" | "price",
+  ): number {
+    switch (sortBy) {
+      case "name":
+        return a.name.localeCompare(b.name);
+      case "price":
+        return Number(a.price) - Number(b.price);
+      default:
+        return 0;
+    }
   }
 }

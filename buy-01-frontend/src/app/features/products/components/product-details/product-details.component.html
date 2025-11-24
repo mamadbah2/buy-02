@@ -84,7 +84,7 @@
   <div *ngIf="product && !hasError && !isLoading">
     <!-- Breadcrumb -->
     <nav class="breadcrumb" aria-label="Breadcrumb">
-      <a routerLink="/orders" class="breadcrumb-link">Products</a>
+      <a routerLink="/products" class="breadcrumb-link">Products</a>
       <span class="breadcrumb-separator">›</span>
       <span class="breadcrumb-current">{{ product.name }}</span>
     </nav>
@@ -250,12 +250,12 @@
     <div class="related-section" *ngIf="relatedProducts && relatedProducts.length > 0">
       <div class="section-header">
         <h2 class="section-title">You Might Also Like</h2>
-        <a routerLink="/orders" class="view-all-link">View All</a>
+        <a routerLink="/products" class="view-all-link">View All</a>
       </div>
 
-      <div class="related-orders-grid">
+      <div class="related-products-grid">
         <div class="related-product-card" *ngFor="let relatedProduct of relatedProducts">
-          <a [routerLink]="['/orders', relatedProduct.id]" class="product-link">
+          <a [routerLink]="['/products', relatedProduct.id]" class="product-link">
             <div class="related-image-container">
               <img
                 [src]="getProductImage(relatedProduct)"

@@ -81,17 +81,20 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
 
   private loadRelatedProducts(): void {
     // Load related products (mock for now)
-    this.productService.getProductList().subscribe({
-      next: (products) => {
-        // Filter out current product and take first 4
-        this.relatedProducts = products
-          .filter((p) => p.id !== this.product?.id)
-          .slice(0, 4);
-      },
+    this.productService
+      .getProductList({ page: 0, size: 8, sortBy: "id", sortDirection: "DESC" })
+      .subscribe({
+        next: (response) => {
+          const products = response.content ?? [];
+          // Filter out current product and take first 4
+          this.relatedProducts = products
+            .filter((p) => p.id !== this.product?.id)
+            .slice(0, 4);
+        },
       error: (err) => {
         console.error("Error loading related products:", err);
       },
-    });
+      });
   }
 
   selectImage(imageUrl: string): void {

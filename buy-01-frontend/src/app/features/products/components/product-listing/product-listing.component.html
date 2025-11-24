@@ -20,13 +20,14 @@
   </div>
 
   <!-- Filters and Search Section -->
-  <div class="filters-section" *ngIf="allProducts && allProducts.length > 0">
+  <div class="filters-section" *ngIf="pagination.totalElements > 0">
     <div class="search-bar">
       <input
         type="text"
-        placeholder="Search orders..."
+        placeholder="Search products..."
         class="search-input"
         #searchInput
+        [value]="searchTerm"
         (input)="onSearch(searchInput.value)"
       />
     </div>
@@ -51,7 +52,7 @@
   </div>
 
   <!-- Empty State -->
-  <div class="empty-state" *ngIf="allProducts && allProducts.length === 0 && !isLoading">
+  <div class="empty-state" *ngIf="!isLoading && pagination.totalElements === 0">
     <div class="empty-state-icon">
       <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path>
@@ -66,8 +67,20 @@
   </div>
 
   <!-- Products Grid -->
-  <div class="product-grid" *ngIf="allProducts && allProducts.length > 0 && !isLoading">
-    <div class="product-card" *ngFor="let product of allProducts; trackBy: trackByProductId">
+  <div class="empty-state secondary" *ngIf="!isLoading && pagination.totalElements > 0 && filteredProducts.length === 0">
+    <div class="empty-state-icon">
+      <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="8" y1="8" x2="16" y2="16"></line>
+        <line x1="16" y1="8" x2="8" y2="16"></line>
+      </svg>
+    </div>
+    <h2>No results match your filters</h2>
+    <p>Try adjusting your search or reset the filters to see all products.</p>
+  </div>
+
+  <div class="product-grid" *ngIf="filteredProducts.length > 0 && !isLoading">
+    <div class="product-card" *ngFor="let product of filteredProducts; trackBy: trackByProductId">
 
       <!-- Product Image -->
       <div class="product-image-container" [routerLink]="['/orders', product.id]">
@@ -104,7 +117,7 @@
           </div>
 
           <div class="product-actions">
-            <a class="view-btn" [routerLink]="['/orders', product.id]" title="View Details">
+            <a class="view-btn" [routerLink]="['/products', product.id]" title="View Details">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                 <circle cx="12" cy="12" r="3"></circle>
@@ -138,11 +151,32 @@
   </div>
 
   <!-- Call to Action for Guests -->
-  <div class="cta-section" *ngIf="isGuest && allProducts && allProducts.length > 0">
+  <div class="cta-section" *ngIf="isGuest && filteredProducts.length > 0">
     <div class="cta-content">
       <h2>Ready to Start Shopping?</h2>
       <p>Join thousands of satisfied customers and unlock exclusive member benefits.</p>
       <a routerLink="/auth" class="cta-button">Create Free Account</a>
+    </div>
+  </div>
+
+  <div class="pagination-toolbar" *ngIf="!isLoading && pagination.totalElements > 0">
+    <div class="pagination-info">
+      Showing {{ rangeStart }}-{{ rangeEnd }} of {{ pagination.totalElements }} products
+    </div>
+    <div class="pagination-controls">
+      <button class="pagination-btn" (click)="previousPage()" [disabled]="pagination.isFirst || isLoading">
+        Previous
+      </button>
+      <span class="pagination-page">Page {{ pagination.currentPage + 1 }} / {{ pagination.totalPages || 1 }}</span>
+      <button class="pagination-btn" (click)="nextPage()" [disabled]="pagination.isLast || isLoading">
+        Next
+      </button>
+    </div>
+    <div class="page-size-selector">
+      <label for="pageSize">Items per page</label>
+      <select id="pageSize" [value]="pagination.pageSize" (change)="onPageSizeChange($any($event.target).value)">
+        <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
+      </select>
     </div>
   </div>
 </div>
