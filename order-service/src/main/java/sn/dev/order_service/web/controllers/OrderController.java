@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 import sn.dev.order_service.web.dto.OrderRequestDto;
+import sn.dev.order_service.web.dto.OrderPatchDto;
 import sn.dev.order_service.web.dto.OrderResponseDto;
 
 @RequestMapping("/api/orders")
@@ -24,7 +25,7 @@ public interface OrderController {
     ResponseEntity<OrderResponseDto> getById(@PathVariable String id);
 
     @PatchMapping("/{id}/command")
-    ResponseEntity<OrderResponseDto> update(@RequestBody @Valid OrderRequestDto orderRequestDto,
+    ResponseEntity<OrderResponseDto> update(@RequestBody OrderPatchDto orderPatchDto,
                                             @PathVariable String id);
 
     @DeleteMapping("/{id}")

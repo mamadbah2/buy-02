@@ -1,8 +1,10 @@
 package sn.dev.user_service.web.dto.requests;
 
+import lombok.Data;
 import sn.dev.user_service.data.entities.Role;
 import sn.dev.user_service.data.entities.User;
 
+@Data
 public class UserRequests {
     private String name;
     private String email;

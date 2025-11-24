@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 public class OrderResponseDto {
     private String id;
     private String userId;
-    private Integer total;
+    private Double total;
     private String status;
     private String paymentMethod;
     private Instant createdAt;
