@@ -4,7 +4,7 @@
     <div class="welcome-content">
       <h1>Discover Amazing Products</h1>
       <p>
-        Welcome to Buy-01 - your destination for quality orders from trusted sellers worldwide.
+        Welcome to Buy-01 - your destination for quality products from trusted sellers worldwide.
         Join our community and unlock exclusive deals and personalized recommendations.
       </p>
       <a routerLink="/auth" class="cta-button">
@@ -16,7 +16,7 @@
   <!-- User Status Header for Logged-in Users -->
   <div class="user-status-header" *ngIf="!isGuest">
     <h1>Explore Our Collection</h1>
-    <p class="subtitle">Curated selection of premium orders from verified sellers</p>
+    <p class="subtitle">Curated selection of premium products from verified sellers</p>
   </div>
 
   <!-- Filters and Search Section -->
@@ -48,7 +48,7 @@
   <!-- Loading State -->
   <div class="loading-state" *ngIf="isLoading">
     <div class="loading-spinner"></div>
-    <p>Loading orders...</p>
+    <p>Loading products...</p>
   </div>
 
   <!-- Empty State -->
@@ -61,7 +61,7 @@
       </svg>
     </div>
     <h2>No Products Available</h2>
-    <p>We're constantly adding new orders to our collection.</p>
+    <p>We're constantly adding new products to our collection.</p>
     <p *ngIf="isSeller">Ready to start selling? Add your first product to get started!</p>
     <p *ngIf="!isSeller">Check back soon for exciting new arrivals and exclusive deals.</p>
   </div>
@@ -83,7 +83,7 @@
     <div class="product-card" *ngFor="let product of filteredProducts; trackBy: trackByProductId">
 
       <!-- Product Image -->
-      <div class="product-image-container" [routerLink]="['/orders', product.id]">
+      <div class="product-image-container" [routerLink]="['/products', product.id]">
         <img
           *ngIf="product.images && product.images.length > 0; else imagePlaceholder"
           [src]="product.images[0].imageUrl"
