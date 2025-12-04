@@ -56,9 +56,9 @@ public class ProductControllerTest {
     @WithMockUser
     void testGetAllReturnsProductResponseDTOList() throws Exception {
         Product product = new Product("1", "Test Product");
-        Media media1 = new Media("m1", "image1.png", "1");
-        Media media2 = new Media("m2", "image2.png", "1");
-        Media media3 = new Media("m3", "image3.png", "1");
+        Media media1 = new Media("m1", "image1.png");
+        Media media2 = new Media("m2", "image2.png");
+        Media media3 = new Media("m3", "image3.png");
 
         // Mock service responses
         when(productService.getAll()).thenReturn(List.of(product));
@@ -106,17 +106,17 @@ public class ProductControllerTest {
                 .thenAnswer(invocation -> {
                     MultipartFile file = invocation.getArgument(0);
                     if (file == null) {
-                        return new Media("m0", "null-file", "1"); // Handle null case
+                        return new Media("m0", "null-file"); // Handle null case
                     }
                     switch (file.getOriginalFilename()) {
                         case null:
-                            return new Media("m0", "null-file", "1");
+                            return new Media("m0", "null-file");
                         case "image1.png":
-                            return new Media("m1", "image1.png", "1");
+                            return new Media("m1", "image1.png");
                         case "image2.png":
-                            return new Media("m2", "image2.png", "1");
+                            return new Media("m2", "image2.png");
                         default:
-                            return new Media("mX", file.getOriginalFilename(), "1");
+                            return new Media("mX", file.getOriginalFilename());
                     }
                 });
         // Perform multipart request
@@ -195,8 +195,8 @@ public class ProductControllerTest {
 
         Product product = new Product("Test Product", "Description", 100.0, 5, "user-123");
         product.setId(productId);
-        Media media1 = new Media("m1", "image1.png", productId);
-        Media media2 = new Media("m2", "image2.png", productId);
+        Media media1 = new Media("m1", "image1.png");
+        Media media2 = new Media("m2", "image2.png");
 
         // Mock service calls
         when(productService.getById(productId)).thenReturn(product);
@@ -241,12 +241,12 @@ public class ProductControllerTest {
 
         // Mock uploading new image
         when(mediaServiceClient.upload(any(MultipartFile.class), eq(productId)))
-                .thenReturn(new Media("m1", "new-image.png", productId));
+                .thenReturn(new Media("m1", "new-image.png"));
 
         // Mock returning all medias including new one
         when(mediaServiceClient.getByProductId(productId))
-                .thenReturn(ResponseEntity.ok(List.of(new Media("m1", "new-image.png", productId),
-                        new Media("m2", "existing-image.png", productId))));
+                .thenReturn(ResponseEntity.ok(List.of(new Media("m1", "new-image.png"),
+                        new Media("m2", "existing-image.png"))));
 
         // Perform multipart PATCH or PUT request (adjust to your controller mapping)
         mockMvc.perform(

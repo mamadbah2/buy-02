@@ -14,6 +14,10 @@ public interface ProductService {
 
     Product getById(String id);
 
+    // Non-paged overload for simple usages
+    List<Product> getByUserId(String userId);
+
+    // Paged variant for listing with pagination
     Page<Product> getByUserId(String userId, Pageable pageable);
 
     List<Product> getAll();
@@ -25,4 +29,9 @@ public interface ProductService {
     void delete(Product product);
 
     void deleteByUserId(String userId);
+
+    /**
+     * Returns up to {@code limit} product name suggestions for the given query using search-as-you-type.
+     */
+    List<String> suggest(String query, int limit);
 }

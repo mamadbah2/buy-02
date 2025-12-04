@@ -27,6 +27,10 @@ export interface ProductPage extends PaginatedResponse<ProductModels> {}
 export interface ProductQueryParams {
   page?: number;
   size?: number;
-  sortBy?: string;
-  sortDirection?: "ASC" | "DESC";
+}
+
+export interface ProductSearchParams {
+  query?: string;
+  minPrice?: number;
+  maxPrice?: number;
 }

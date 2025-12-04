@@ -82,7 +82,7 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
   private loadRelatedProducts(): void {
     // Load related products (mock for now)
     this.productService
-      .getProductList({ page: 0, size: 8, sortBy: "id", sortDirection: "DESC" })
+      .getProductList({ page: 0, size: 8 })
       .subscribe({
         next: (response) => {
           const products = response.content ?? [];

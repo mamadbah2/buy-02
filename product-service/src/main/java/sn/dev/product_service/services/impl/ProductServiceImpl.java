@@ -4,6 +4,7 @@ import java.util.List;
 
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -46,23 +47,24 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public List<Product> getByUserId(String userId) {
+        return productRepo.findByUserId(userId);
+    }
+
+    @Override
     public Page<Product> getByUserId(String userId, Pageable pageable) {
         return productRepo.findByUserId(userId, pageable);
     }
 
     @Override
     public Page<Product> search(String query, Double minPrice, Double maxPrice, Pageable pageable) {
-        // Si le query est vide, retourner tous les produits avec filtre de prix si spécifié
         if (query == null || query.trim().isEmpty()) {
             if (minPrice != null && maxPrice != null) {
-                return productSearchRepo.findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndPriceBetween(
-                        "", "", minPrice, maxPrice, pageable);
+                return productSearchRepo.findByPriceBetween(minPrice, maxPrice, pageable);
             } else if (minPrice != null) {
-                return productSearchRepo.findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndPriceGreaterThanEqual(
-                        "", "", minPrice, pageable);
+                return productSearchRepo.findByPriceGreaterThanEqual(minPrice, pageable);
             } else if (maxPrice != null) {
-                return productSearchRepo.findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndPriceLessThanEqual(
-                        "", "", maxPrice, pageable);
+                return productSearchRepo.findByPriceLessThanEqual(maxPrice, pageable);
             }
             return productSearchRepo.findAll(pageable);
         }
@@ -82,6 +84,18 @@ public class ProductServiceImpl implements ProductService {
         // Recherche sans filtre de prix
         return productSearchRepo.findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(
                 query, query, pageable);
+    }
+
+    @Override
+    public List<String> suggest(String query, int limit) {
+        if (query == null || query.trim().length() < 2) {
+            return List.of();
+        }
+        String q = query.trim();
+        int size = Math.max(1, Math.min(limit, 50));
+        Pageable pageable = PageRequest.of(0, size);
+        Page<Product> page = productSearchRepo.customAutocompleteSearch(q, pageable);
+        return page.getContent().stream().map(Product::getName).limit(size).toList();
     }
 
     @Override

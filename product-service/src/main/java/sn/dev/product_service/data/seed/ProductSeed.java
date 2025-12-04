@@ -55,7 +55,7 @@ public class ProductSeed implements CommandLineRunner {
         List<Product> products = new ArrayList<>();
 
         // Générer 500 produits fictifs avec des données variées
-        for (int i = 0; i < 500; i++) {
+        for (int i = 0; i < 1500; i++) {
             Product product = new Product();
 
             // Catégories variées de produits
@@ -90,6 +90,12 @@ public class ProductSeed implements CommandLineRunner {
         }
 
         log.info("💡 Les images seront créées automatiquement par media-service au démarrage");
+    }
+
+    private void reindexProductsOnElasticSearch() {
+        productSearchRepo.deleteAll();
+        List<Product> allProducts = productRepo.findAll();
+        productSearchRepo.saveAll(allProducts);
     }
 
     private String getRandomCategory() {

@@ -20,7 +20,7 @@ public class Product {
     @Id
     private String id;
 
-    @Field(type = FieldType.Text, analyzer = "standard")
+    @Field(type = FieldType.Search_As_You_Type)
     private String name;
 
     @Field(type = FieldType.Text, analyzer = "standard")

@@ -5,6 +5,7 @@ import { RouterLink } from "@angular/router";
 import { AuthService } from "../../../../auth/services/auth.service";
 import { CommonModule } from "@angular/common";
 import { JwtService } from "../../../../shared/services/jwt.service";
+import {SearchComponent} from '../search/search.component';
 
 interface PaginationState {
   totalElements: number;
@@ -17,7 +18,7 @@ interface PaginationState {
 
 @Component({
   selector: "app-product-listing",
-  imports: [RouterLink, CommonModule],
+  imports: [RouterLink, CommonModule, SearchComponent],
   templateUrl: "./product-listing.component.html",
   styleUrl: "./product-listing.component.css",
 })
@@ -73,15 +74,20 @@ export class ProductListingComponent implements OnInit {
   private loadProducts(page: number = this.pagination.currentPage) {
     this.isLoading = true;
     const safePage = Math.max(0, page);
-    const sortField = this.selectedSort || "id";
+    const commonParams = {
+      page: safePage,
+      size: this.pagination.pageSize
+    };
 
-    this.productService
-      .getProductList({
-        page: safePage,
-        size: this.pagination.pageSize,
-        sortBy: sortField,
-        sortDirection: this.sortDirection,
-      })
+    const hasSearch = this.searchTerm && this.searchTerm.trim().length > 0;
+    const request$ = hasSearch
+      ? this.productService.searchProducts(
+          { query: this.searchTerm.trim() },
+          commonParams,
+        )
+      : this.productService.getProductList(commonParams);
+
+    request$
       .subscribe({
         next: (response) => {
           console.log("Products loaded successfully:");
@@ -94,8 +100,8 @@ export class ProductListingComponent implements OnInit {
             isLast: response.last,
           };
           this.allProducts = response.content ?? [];
+          this.filteredProducts = response.content ?? [];
           this.isLoading = false;
-          this.applyFilters();
         },
         error: (err) => {
           console.error("Error loading products:", err);
@@ -198,8 +204,9 @@ export class ProductListingComponent implements OnInit {
 
   // Search functionality
   onSearch(term: string) {
-    this.searchTerm = term.trim().toLowerCase();
-    this.applyFilters();
+    this.searchTerm = term;
+    // Reset to first page when searching
+    this.loadProducts(0);
   }
 
   private applyFilters() {

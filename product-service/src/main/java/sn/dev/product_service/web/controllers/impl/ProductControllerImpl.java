@@ -153,9 +153,7 @@ public class ProductControllerImpl implements ProductController {
         Double minPrice,
         Double maxPrice,
         int page,
-        int size,
-        String sortBy,
-        String sortDirection
+        int size
     ) {
         System.out.println(
             String.format(
@@ -164,14 +162,8 @@ public class ProductControllerImpl implements ProductController {
             )
         );
 
-        // Créer l'objet Sort
-        Sort.Direction direction = sortDirection.equalsIgnoreCase("ASC")
-            ? Sort.Direction.ASC
-            : Sort.Direction.DESC;
-        Sort sort = Sort.by(direction, sortBy);
-
         // Créer l'objet Pageable
-        Pageable pageable = PageRequest.of(page, size, sort);
+        Pageable pageable = PageRequest.of(page, size);
 
         // Rechercher les produits
         Page<Product> productsPage = productService.search(query, minPrice, maxPrice, pageable);
@@ -266,5 +258,14 @@ public class ProductControllerImpl implements ProductController {
         mediaServiceClient.deleteByProductId(id);
 
         return ResponseEntity.noContent().build();
+    }
+
+    @Override
+    public java.util.List<String> suggest(String query) {
+        if (query == null || query.trim().length() < 2) {
+            return java.util.List.of();
+        }
+        // limit results to 5 as requested
+        return productService.suggest(query.trim(), 5);
     }
 }

@@ -5,6 +5,7 @@ import {
   ProductModels,
   ProductPage,
   ProductQueryParams,
+  ProductSearchParams,
 } from "../models/product.models";
 import { environment } from "../../../../environments/environment";
 
@@ -15,9 +16,7 @@ export class ProductService {
   private apiUrl = environment.apiUrl;
   private readonly defaultQuery: Required<ProductQueryParams> = {
     page: 0,
-    size: 20,
-    sortBy: "id",
-    sortDirection: "DESC",
+    size: 20
   };
 
   constructor(private httpClient: HttpClient) {}
@@ -36,6 +35,51 @@ export class ProductService {
 
     return this.httpClient
       .get<ProductPage>(`${this.apiUrl}/api/products`, { params: httpParams })
+      .pipe(catchError((err) => throwError(() => err)));
+  }
+
+  searchProducts(
+    search: ProductSearchParams = {},
+    params: ProductQueryParams = {},
+  ): Observable<ProductPage> {
+    const mergedParams = { ...this.defaultQuery, ...params };
+    let httpParams = new HttpParams();
+
+    // Add pagination/sort params
+    Object.entries(mergedParams).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        httpParams = httpParams.set(key, value.toString());
+      }
+    });
+
+    // Add search-specific params
+    if (search.query?.trim()) {
+      httpParams = httpParams.set("query", search.query.trim());
+    }
+    if (typeof search.minPrice === "number") {
+      httpParams = httpParams.set("minPrice", String(search.minPrice));
+    }
+    if (typeof search.maxPrice === "number") {
+      httpParams = httpParams.set("maxPrice", String(search.maxPrice));
+    }
+
+    return this.httpClient
+      .get<ProductPage>(`${this.apiUrl}/api/products/search`, {
+        params: httpParams,
+      })
+      .pipe(catchError((err) => throwError(() => err)));
+  }
+
+  /**
+   * Get product name suggestions for autocomplete
+   * GET {apiUrl}/api/products/suggest?query=...
+   */
+  suggestProducts(query: string): Observable<string[]> {
+    const httpParams = new HttpParams().set("query", query ?? "");
+    return this.httpClient
+      .get<string[]>(`${this.apiUrl}/api/products/suggest`, {
+        params: httpParams,
+      })
       .pipe(catchError((err) => throwError(() => err)));
   }
 
