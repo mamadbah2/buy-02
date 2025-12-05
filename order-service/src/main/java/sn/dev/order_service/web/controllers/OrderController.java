@@ -6,10 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
-import sn.dev.order_service.web.dto.OrderRequestDto;
-import sn.dev.order_service.web.dto.OrderPatchDto;
-import sn.dev.order_service.web.dto.OrderResponseDto;
-import sn.dev.order_service.web.dto.UserProfileStatisticsDto;
+import sn.dev.order_service.web.dto.*;
 
 @RequestMapping("/api/orders")
 public interface OrderController {
@@ -28,6 +25,12 @@ public interface OrderController {
     @PatchMapping("/{id}/command")
     ResponseEntity<OrderResponseDto> update(@RequestBody OrderPatchDto orderPatchDto,
                                             @PathVariable String id);
+
+    @PostMapping("/{id}/confirm")
+    ResponseEntity<OrderResponseDto> confirmOrder(@PathVariable String id);
+
+    @GetMapping("/{id}/sub-orders")
+    ResponseEntity<List<SubOrderResponseDto>> getSubOrders(@PathVariable String id);
 
     @DeleteMapping("/{id}")
     ResponseEntity<Void> delete(@PathVariable String id);

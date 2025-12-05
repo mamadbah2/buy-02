@@ -4,6 +4,7 @@ import java.util.List;
 
 import sn.dev.order_service.data.entities.Order;
 import sn.dev.order_service.data.entities.OrderItem;
+import sn.dev.order_service.data.entities.SubOrder;
 import sn.dev.order_service.web.dto.UserProfileStatisticsDto;
 
 public interface OrderService {
@@ -14,6 +15,10 @@ public interface OrderService {
     Order updateCart(String id, OrderItem item);
 
     Order update(Order order);
+
+    Order confirmOrder(String orderId);
+
+    List<SubOrder> getSubOrdersByParentOrderId(String parentOrderId);
 
     Order getById(String id);
 

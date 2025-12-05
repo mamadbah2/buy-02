@@ -14,13 +14,16 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 import sn.dev.order_service.data.entities.Order;
+import sn.dev.order_service.data.entities.SubOrder;
 import sn.dev.order_service.services.OrderService;
 import sn.dev.order_service.web.controllers.OrderController;
 import sn.dev.order_service.web.dto.OrderRequestDto;
 import sn.dev.order_service.web.dto.OrderPatchDto;
 import sn.dev.order_service.web.dto.OrderResponseDto;
+import sn.dev.order_service.web.dto.SubOrderResponseDto;
 import sn.dev.order_service.web.dto.UserProfileStatisticsDto;
 import sn.dev.order_service.web.mappers.OrdersMappers;
+import sn.dev.order_service.web.mappers.SubOrderMapper;
 
 @Slf4j
 @RestController
@@ -29,6 +32,7 @@ public class OrderControllerImpl implements OrderController {
 
     private final OrderService orderService;
     private final OrdersMappers ordersMappers;
+    private final SubOrderMapper subOrderMapper;
     private static final String MAX_AGE = "300";
     private static final String USERIDSTR = "userID";
 
@@ -112,6 +116,62 @@ public class OrderControllerImpl implements OrderController {
         return ResponseEntity.ok()
             .header(HttpHeaders.CACHE_CONTROL, "public, max-age=" + MAX_AGE)
             .body(ordersMappers.toResponse(updatedOrder));
+    }
+
+    @Override
+    public ResponseEntity<OrderResponseDto> confirmOrder(String id) {
+        log.info("CONFIRM order with id: {}", id);
+
+        // Connected User
+        Authentication auth =
+            SecurityContextHolder.getContext().getAuthentication();
+        Jwt jwt = (Jwt) auth.getPrincipal();
+        String userId = jwt.getClaimAsString(USERIDSTR);
+
+        // Get order and verify ownership
+        Order order = orderService.getById(id);
+        if (!order.getUserId().equals(userId)) {
+            throw new ResponseStatusException(
+                HttpStatus.FORBIDDEN,
+                "You are not allowed to confirm this order"
+            );
+        }
+
+        // Confirm order and trigger order splitting
+        Order confirmedOrder = orderService.confirmOrder(id);
+
+        return ResponseEntity.ok()
+            .header(HttpHeaders.CACHE_CONTROL, "public, max-age=" + MAX_AGE)
+            .body(ordersMappers.toResponse(confirmedOrder));
+    }
+
+    @Override
+    public ResponseEntity<List<SubOrderResponseDto>> getSubOrders(String id) {
+        log.info("GET sub-orders for order id: {}", id);
+
+        // Connected User
+        Authentication auth =
+            SecurityContextHolder.getContext().getAuthentication();
+        Jwt jwt = (Jwt) auth.getPrincipal();
+        String userId = jwt.getClaimAsString(USERIDSTR);
+
+        // Verify order ownership
+        Order order = orderService.getById(id);
+        if (!order.getUserId().equals(userId)) {
+            throw new ResponseStatusException(
+                HttpStatus.FORBIDDEN,
+                "You are not allowed to view sub-orders for this order"
+            );
+        }
+
+        // Get sub-orders
+        List<SubOrder> subOrders = orderService.getSubOrdersByParentOrderId(id);
+        List<SubOrderResponseDto> responseList = subOrders
+            .stream()
+            .map(subOrderMapper::toResponse)
+            .toList();
+
+        return ResponseEntity.ok(responseList);
     }
 
     @Override

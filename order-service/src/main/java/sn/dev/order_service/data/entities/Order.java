@@ -25,6 +25,7 @@ public class Order {
     private String paymentMethod;
     private List<OrderItem> orderItemList;
     private Instant createdAt;
+    private Boolean isSplit = false;
 
     public Order(String userId, Double total, String status, String paymentMethod) {
         this.userId = userId;
@@ -32,6 +33,7 @@ public class Order {
         this.status = status;
         this.paymentMethod = paymentMethod;
         this.createdAt = Instant.now();
+        this.isSplit = false;
     }
 
 }

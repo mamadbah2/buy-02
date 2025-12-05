@@ -7,12 +7,15 @@ import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import sn.dev.order_service.client.product.ProductClient;
 import sn.dev.order_service.data.entities.Order;
 import sn.dev.order_service.data.entities.OrderItem;
+import sn.dev.order_service.data.entities.SubOrder;
 import sn.dev.order_service.data.repository.OrderRepository;
+import sn.dev.order_service.data.repository.SubOrderRepository;
 import sn.dev.order_service.services.OrderService;
 import sn.dev.order_service.web.dto.ProductResponseDto;
 import sn.dev.order_service.web.dto.ProductStatisticsDto;
@@ -22,6 +25,7 @@ import sn.dev.order_service.web.dto.UserProfileStatisticsDto;
 @AllArgsConstructor
 public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
+    private final SubOrderRepository subOrderRepository;
     private final ProductClient productClient;
 
     private static final String NOT_FOUND_MESSAGE = "Order not found with id: ";
@@ -117,6 +121,88 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Order update(Order order) {
         return orderRepository.save(order);
+    }
+
+    @Override
+    @Transactional
+    public Order confirmOrder(String orderId) {
+        // Récupérer la commande
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, NOT_FOUND_MESSAGE + orderId));
+
+        // Vérifier que la commande n'a pas déjà été divisée
+        if (Boolean.TRUE.equals(order.getIsSplit())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+                    "Order has already been split into sub-orders");
+        }
+
+        // Vérifier que la commande a des items
+        if (order.getOrderItemList() == null || order.getOrderItemList().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+                    "Cannot confirm an order with no items");
+        }
+
+        // Enrichir les items avec le sellerId si nécessaire
+        enrichOrderItemsWithSellerId(order.getOrderItemList());
+
+        // Grouper les items par sellerId
+        Map<String, List<OrderItem>> itemsBySeller = order.getOrderItemList().stream()
+                .filter(item -> item.getSellerId() != null)
+                .collect(Collectors.groupingBy(OrderItem::getSellerId));
+
+        // Créer une SubOrder pour chaque vendeur
+        List<SubOrder> subOrders = itemsBySeller.entrySet().stream()
+                .map(entry -> {
+                    String sellerId = entry.getKey();
+                    List<OrderItem> sellerItems = entry.getValue();
+
+                    // Calculer le sous-total pour ce vendeur
+                    Double subTotal = sellerItems.stream()
+                            .mapToDouble(item -> item.getQuantity() * item.getUnitPrice())
+                            .sum();
+
+                    // Créer la SubOrder
+                    return new SubOrder(
+                            order.getId(),
+                            sellerId,
+                            order.getUserId(),
+                            subTotal,
+                            "PENDING",
+                            sellerItems
+                    );
+                })
+                .toList();
+
+        // Sauvegarder toutes les SubOrders
+        subOrderRepository.saveAll(subOrders);
+
+        // Mettre à jour le statut de la commande principale
+        order.setStatus("PENDING");
+        order.setIsSplit(true);
+
+        return orderRepository.save(order);
+    }
+
+    @Override
+    public List<SubOrder> getSubOrdersByParentOrderId(String parentOrderId) {
+        return subOrderRepository.findByParentOrderId(parentOrderId);
+    }
+
+    /**
+     * Enrichit les OrderItems avec le sellerId en interrogeant le ProductClient
+     */
+    private void enrichOrderItemsWithSellerId(List<OrderItem> orderItems) {
+        for (OrderItem item : orderItems) {
+            if (item.getSellerId() == null) {
+                try {
+                    ProductResponseDto product = productClient.getById(item.getProductId());
+                    item.setSellerId(product.getUserId());
+                } catch (Exception e) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+                            "Unable to fetch seller information for product: " + item.getProductId(), e);
+                }
+            }
+        }
     }
 
     @Override
