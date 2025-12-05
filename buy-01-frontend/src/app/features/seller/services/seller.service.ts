@@ -112,12 +112,8 @@ export class SellerService {
     });
 
     // Get all products and filter by userId on the frontend
-    return this.http.get<ProductResponse[]>(this.apiUrl, { headers }).pipe(
-      catchError(this.handleError),
-      // Filter products to only return those belonging to the current user
-      map((products: ProductResponse[]) =>
-        products.filter((product) => product.userId === currentUserId),
-      ),
+    return this.http.get<ProductResponse[]>(this.apiUrl + `/seller/${currentUserId}`, { headers }).pipe(
+      catchError(this.handleError)
     );
   }
 
