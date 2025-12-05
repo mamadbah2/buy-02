@@ -9,7 +9,7 @@ import { ToastService } from '../../shared/services/toast.service';
 import { Order, OrderItem } from '../orders/models/order.models';
 import { forkJoin, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
-import { LucideAngularModule, Trash2, Minus, Plus, CreditCard } from 'lucide-angular';
+import { LucideAngularModule, Trash2, Minus, Plus, CreditCard, ShoppingBag, ArrowRight, ArrowLeft } from 'lucide-angular';
 
 @Component({
   selector: 'app-cart',
@@ -33,6 +33,9 @@ export class CartComponent implements OnInit {
   readonly Minus = Minus;
   readonly Plus = Plus;
   readonly CreditCard = CreditCard;
+  readonly ShoppingBag = ShoppingBag;
+  readonly ArrowRight = ArrowRight;
+  readonly ArrowLeft = ArrowLeft;
 
   private cartService = inject(CartService);
   private orderService = inject(OrderService);
@@ -152,6 +155,10 @@ export class CartComponent implements OnInit {
 
   getProductName(productId: string): string {
     return this.productDetails.get(productId)?.name || 'Loading Product...';
+  }
+
+  getProductPrice(productId: string): number {
+    return this.productDetails.get(productId)?.price || 0;
   }
 
   getProductImage(productId: string): string {

@@ -4,6 +4,7 @@ import java.util.List;
 
 import sn.dev.order_service.data.entities.Order;
 import sn.dev.order_service.data.entities.OrderItem;
+import sn.dev.order_service.web.dto.UserProfileStatisticsDto;
 
 public interface OrderService {
     Order create(Order order);
@@ -27,4 +28,6 @@ public interface OrderService {
     Double computeOrdersItems(List<OrderItem> orderItemList);
 
     void deleteByUserId(String userId);
+
+    UserProfileStatisticsDto getUserStatistics(String userId);
 }

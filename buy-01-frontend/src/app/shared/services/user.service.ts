@@ -73,6 +73,25 @@ export class UserService {
   }
 
   /**
+   * Get user profile by ID
+   */
+  getUserProfile(userId: string): Observable<UserProfile> {
+    const token = this.authService.getToken();
+    
+    if (!token) {
+      return throwError(() => new Error('No authentication token available'));
+    }
+
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Accept': 'application/json'
+    });
+
+    return this.http.get<any>(`${this.apiUrl}/${userId}/custom`, { headers })
+      .pipe(catchError(this.handleError));
+  }
+
+  /**
    * Update user profile (text fields only) - PATCH instead of PUT to update only modified fields
    */
   updateUserProfile(userData: UpdateUserRequest): Observable<UserProfile> {

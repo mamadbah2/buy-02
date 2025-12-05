@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import sn.dev.order_service.web.dto.OrderRequestDto;
 import sn.dev.order_service.web.dto.OrderPatchDto;
 import sn.dev.order_service.web.dto.OrderResponseDto;
+import sn.dev.order_service.web.dto.UserProfileStatisticsDto;
 
 @RequestMapping("/api/orders")
 public interface OrderController {
@@ -30,4 +31,7 @@ public interface OrderController {
 
     @DeleteMapping("/{id}")
     ResponseEntity<Void> delete(@PathVariable String id);
+
+    @GetMapping("/statistics/user/{clientId}")
+    ResponseEntity<UserProfileStatisticsDto> getUserStatistics(@PathVariable String clientId);
 }

@@ -1,21 +1,28 @@
 package sn.dev.order_service.services.impl;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import sn.dev.order_service.client.product.ProductClient;
 import sn.dev.order_service.data.entities.Order;
 import sn.dev.order_service.data.entities.OrderItem;
 import sn.dev.order_service.data.repository.OrderRepository;
 import sn.dev.order_service.services.OrderService;
+import sn.dev.order_service.web.dto.ProductResponseDto;
+import sn.dev.order_service.web.dto.ProductStatisticsDto;
+import sn.dev.order_service.web.dto.UserProfileStatisticsDto;
 
 @Service
 @AllArgsConstructor
 public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
+    private final ProductClient productClient;
 
     private static final String NOT_FOUND_MESSAGE = "Order not found with id: ";
 
@@ -128,5 +135,79 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public void deleteByUserId(String userId) {
         orderRepository.deleteByUserId(userId);
+    }
+
+    @Override
+    public UserProfileStatisticsDto getUserStatistics(String userId) {
+        // Get all orders for the user (excluding CART status)
+        List<Order> userOrders = orderRepository.findByUserId(userId).stream()
+                .filter(order -> !"CART".equals(order.getStatus()))
+                .toList();
+
+        // Calculate total spent and total orders
+        double totalSpent = userOrders.stream()
+                .mapToDouble(Order::getTotal)
+                .sum();
+        long totalOrders = userOrders.size();
+
+        // Aggregate product statistics
+        Map<String, ProductStatisticsDto> productStatsMap = userOrders.stream()
+                .flatMap(order -> order.getOrderItemList().stream())
+                .collect(Collectors.groupingBy(
+                        OrderItem::getProductId,
+                        Collectors.collectingAndThen(
+                                Collectors.toList(),
+                                items -> {
+                                    String productId = items.get(0).getProductId();
+                                    int totalQuantity = items.stream()
+                                            .mapToInt(OrderItem::getQuantity)
+                                            .sum();
+                                    double totalRevenue = items.stream()
+                                            .mapToDouble(item -> item.getQuantity() * item.getUnitPrice())
+                                            .sum();
+                                    long orderCount = items.stream()
+                                            .map(OrderItem::getOrderId)
+                                            .distinct()
+                                            .count();
+
+                                    // Fetch product details
+                                    String productName = productId;
+                                    try {
+                                        ProductResponseDto product = productClient.getById(productId);
+                                        productName = product.getName();
+                                    } catch (Exception e) {
+                                        // If product not found, use productId as name
+                                    }
+
+                                    return new ProductStatisticsDto(
+                                            productId,
+                                            productName,
+                                            totalQuantity,
+                                            totalRevenue,
+                                            orderCount
+                                    );
+                                }
+                        )
+                ));
+
+        // Sort by quantity for most purchased products (top 5)
+        List<ProductStatisticsDto> mostPurchasedProducts = productStatsMap.values().stream()
+                .sorted((p1, p2) -> p2.getTotalQuantity().compareTo(p1.getTotalQuantity()))
+                .limit(5)
+                .toList();
+
+        // Sort by revenue for best selling products (top 5)
+        List<ProductStatisticsDto> bestSellingProducts = productStatsMap.values().stream()
+                .sorted((p1, p2) -> p2.getTotalRevenue().compareTo(p1.getTotalRevenue()))
+                .limit(5)
+                .toList();
+
+        return new UserProfileStatisticsDto(
+                userId,
+                totalSpent,
+                totalOrders,
+                mostPurchasedProducts,
+                bestSellingProducts
+        );
     }
 }

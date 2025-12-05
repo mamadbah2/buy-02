@@ -19,6 +19,7 @@ import sn.dev.order_service.web.controllers.OrderController;
 import sn.dev.order_service.web.dto.OrderRequestDto;
 import sn.dev.order_service.web.dto.OrderPatchDto;
 import sn.dev.order_service.web.dto.OrderResponseDto;
+import sn.dev.order_service.web.dto.UserProfileStatisticsDto;
 import sn.dev.order_service.web.mappers.OrdersMappers;
 
 @Slf4j
@@ -133,5 +134,14 @@ public class OrderControllerImpl implements OrderController {
         orderService.delete(order);
 
         return ResponseEntity.noContent().build();
+    }
+
+    @Override
+    public ResponseEntity<UserProfileStatisticsDto> getUserStatistics(String clientId) {
+        log.info("GET user statistics for user: {}", clientId);
+
+        UserProfileStatisticsDto statistics = orderService.getUserStatistics(clientId);
+
+        return ResponseEntity.ok(statistics);
     }
 }

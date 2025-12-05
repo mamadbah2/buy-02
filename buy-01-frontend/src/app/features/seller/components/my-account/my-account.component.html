@@ -18,8 +18,8 @@
   </div>
 
   <!-- Profile Content -->
-  <div *ngIf="userProfile" class="profile-container">
-    <!-- Profile Card -->
+  <div *ngIf="userProfile" class="dashboard-grid">
+    <!-- Left Column: Profile Card -->
     <div class="profile-card">
       <!-- Avatar Section -->
       <div class="avatar-section">
@@ -184,6 +184,64 @@
               </button>
             </div>
           </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Statistics -->
+    <div class="dashboard-content">
+      <!-- Stats Cards -->
+      <div class="stats-container" *ngIf="userStatistics">
+        <div class="stat-card">
+          <div class="stat-icon-container blue">
+            <lucide-icon [img]="DollarSign" class="w-6 h-6"></lucide-icon>
+          </div>
+          <div class="stat-info">
+            <span class="stat-label">Total Spent</span>
+            <span class="stat-value">{{ formatCurrency(userStatistics.totalSpent) }}</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon-container purple">
+            <lucide-icon [img]="ShoppingBag" class="w-6 h-6"></lucide-icon>
+          </div>
+          <div class="stat-info">
+            <span class="stat-label">Total Orders</span>
+            <span class="stat-value">{{ userStatistics.totalOrders }}</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon-container green">
+            <lucide-icon [img]="Package" class="w-6 h-6"></lucide-icon>
+          </div>
+          <div class="stat-info">
+            <span class="stat-label">Products Purchased</span>
+            <span class="stat-value">{{ userStatistics.mostPurchasedProducts.length }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Most Purchased Products -->
+      <div class="products-section" *ngIf="userStatistics?.mostPurchasedProducts?.length">
+        <div class="section-header">
+          <h3 class="section-title">
+            <lucide-icon [img]="TrendingUp" class="w-5 h-5 text-primary-600"></lucide-icon>
+            Most Purchased Products
+          </h3>
+        </div>
+        <div class="products-list">
+          <div class="product-item" *ngFor="let product of userStatistics!.mostPurchasedProducts; let i = index">
+            <div class="product-info">
+              <div class="product-rank">{{ i + 1 }}</div>
+              <span class="product-name">{{ product.productName }}</span>
+            </div>
+            <div class="product-stats">
+              <span class="product-revenue">{{ formatCurrency(product.totalRevenue) }}</span>
+              <span class="product-quantity">{{ product.totalQuantity }} items</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>

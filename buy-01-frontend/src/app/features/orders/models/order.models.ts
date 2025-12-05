@@ -25,3 +25,19 @@ export interface OrderCommandRequest {
   status: string;
   paymentMethod: string;
 }
+
+export interface ProductStatistic {
+  productId: string;
+  productName: string;
+  totalQuantity: number;
+  totalRevenue: number;
+  orderCount: number;
+}
+
+export interface UserStatistics {
+  userId: string;
+  totalSpent: number;
+  totalOrders: number;
+  mostPurchasedProducts: ProductStatistic[];
+  bestSellingProducts: ProductStatistic[];
+}
