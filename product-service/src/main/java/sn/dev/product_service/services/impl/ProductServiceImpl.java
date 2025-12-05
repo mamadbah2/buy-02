@@ -21,7 +21,6 @@ import sn.dev.product_service.services.ProductService;
 public class ProductServiceImpl implements ProductService {
     private final ProductRepo productRepo;
     private final ProductSearchRepo productSearchRepo;
-    private static final Pattern ES_AUTOCOMPLETE_CHARS = Pattern.compile("[^\\p{L}\\p{N}\\s]");
 
     @Override
     public Product create(Product product) {
@@ -58,37 +57,6 @@ public class ProductServiceImpl implements ProductService {
         return productRepo.findByUserId(userId, pageable);
     }
 
-//    @Override
-//    public Page<Product> search(String query, Double minPrice, Double maxPrice, Pageable pageable) {
-//        if (query == null || query.trim().isEmpty()) {
-//            if (minPrice != null && maxPrice != null) {
-//                return productSearchRepo.findByPriceBetween(minPrice, maxPrice, pageable);
-//            } else if (minPrice != null) {
-//                return productSearchRepo.findByPriceGreaterThanEqual(minPrice, pageable);
-//            } else if (maxPrice != null) {
-//                return productSearchRepo.findByPriceLessThanEqual(maxPrice, pageable);
-//            }
-//            return productSearchRepo.findAll(pageable);
-//        }
-//
-//        // Recherche avec query et filtres de prix optionnels
-//        if (minPrice != null && maxPrice != null) {
-//            return productSearchRepo.findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndPriceBetween(
-//                    query, query, minPrice, maxPrice, pageable);
-//        } else if (minPrice != null) {
-//            return productSearchRepo.findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndPriceGreaterThanEqual(
-//                    query, query, minPrice, pageable);
-//        } else if (maxPrice != null) {
-//            return productSearchRepo.findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndPriceLessThanEqual(
-//                    query, query, maxPrice, pageable);
-//        }
-//
-//        // Recherche sans filtre de prix
-//        return productSearchRepo.findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(
-//                query, query, pageable);
-//    }
-
-    // Buy-02/product-service/src/main/java/sn/dev/product_service/services/impl/ProductServiceImpl.java
     @Override
     public Page<Product> search(String query, Double minPrice, Double maxPrice, Pageable pageable) {
         String sanitizedQuery = null;
@@ -121,7 +89,7 @@ public class ProductServiceImpl implements ProductService {
         if (query == null || query.trim().length() < 2) {
             return List.of();
         }
-        String q = ES_AUTOCOMPLETE_CHARS.matcher(query.trim()).replaceAll(" ");
+        String q = query.trim();
         int size = Math.max(1, Math.min(limit, 50));
         Pageable pageable = PageRequest.of(0, size);
         Page<Product> page = productSearchRepo.customAutocompleteSearch(q, pageable);

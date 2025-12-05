@@ -28,14 +28,14 @@ export const routes: Routes = [
       import("./features/cart/cart.component").then((m) => m.CartComponent),
     canActivate: [authGuard], // Only logged-in users
   },
-  // {
-  //   path: "orders",
-  //   loadComponent: () =>
-  //     import("./features/orders/orders.component").then(
-  //       (m) => m.OrdersComponent,
-  //     ),
-  //   canActivate: [authGuard], // Only logged-in users
-  // },
+  {
+    path: "orders",
+    loadComponent: () =>
+      import("./features/orders/components/my-orders/my-orders.component").then(
+        (m) => m.MyOrdersComponent,
+      ),
+    canActivate: [authGuard], // Only logged-in users
+  },
 
   {
     path: "seller/my-products",
