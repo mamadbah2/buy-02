@@ -22,13 +22,12 @@ export const routes: Routes = [
     component: ProductDetailsComponent,
     // Allow guest access to product details
   },
-  // TODO: Create cart and orders components later
-  // {
-  //   path: "cart",
-  //   loadComponent: () =>
-  //     import("./features/cart/cart.component").then((m) => m.CartComponent),
-  //   canActivate: [authGuard], // Only logged-in users
-  // },
+  {
+    path: "cart",
+    loadComponent: () =>
+      import("./features/cart/cart.component").then((m) => m.CartComponent),
+    canActivate: [authGuard], // Only logged-in users
+  },
   // {
   //   path: "orders",
   //   loadComponent: () =>

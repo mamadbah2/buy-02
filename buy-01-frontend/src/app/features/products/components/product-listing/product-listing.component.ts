@@ -5,7 +5,9 @@ import { RouterLink } from "@angular/router";
 import { AuthService } from "../../../../auth/services/auth.service";
 import { CommonModule } from "@angular/common";
 import { JwtService } from "../../../../shared/services/jwt.service";
-import {SearchComponent} from '../search/search.component';
+import { SearchComponent } from '../search/search.component';
+import { CartService } from "../../../cart/services/cart.service";
+import { ToastService } from "../../../../shared/services/toast.service";
 
 interface PaginationState {
   totalElements: number;
@@ -42,8 +44,10 @@ export class ProductListingComponent implements OnInit {
   };
 
   private productService = inject(ProductService);
+  private cartService = inject(CartService);
   private authService = inject(AuthService);
   private jwtService = inject(JwtService);
+  private toastService = inject(ToastService);
 
   // Helper methods for template
   getQuantityAsNumber(quantity: string): number {
@@ -133,10 +137,16 @@ export class ProductListingComponent implements OnInit {
 
     // Enhanced cart logic
     console.log("Adding to cart:", product);
-    this.showSuccessMessage(`${product.name} added to cart!`);
-
-    // Here you would typically call a cart service
-    // this.cartService.addToCart(product);
+    
+    this.cartService.addItemToCart(product.id, 1, Number(product.price)).subscribe({
+      next: () => {
+        this.showSuccessMessage(`${product.name} added to cart!`);
+      },
+      error: (err) => {
+        console.error('Failed to add to cart', err);
+        this.toastService.error('Error', 'Failed to add to cart');
+      }
+    });
   }
 
   formatPrice(price: number | string): string {
@@ -162,9 +172,7 @@ export class ProductListingComponent implements OnInit {
   }
 
   private showSuccessMessage(message: string) {
-    // You can replace this with a toast notification service
-    console.log(message);
-    // Example: this.toastr.success(message);
+    this.toastService.success('Success', message);
   }
 
   // Enhanced product filtering methods (you can add these features)

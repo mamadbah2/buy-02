@@ -102,8 +102,9 @@ public class OrderControllerImpl implements OrderController {
             );
         }
 
-        // Update only the status field for PATCH operation
+        // Update only the status and payment field for PATCH operation
         order.setStatus(orderPatchDto.getStatus());
+        order.setPaymentMethod(orderPatchDto.getPaymentMethod());
 
         Order updatedOrder = orderService.update(order);
 

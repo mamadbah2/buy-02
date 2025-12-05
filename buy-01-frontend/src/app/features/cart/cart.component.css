@@ -1,0 +1,5 @@
+/* Add any specific styles here if Tailwind is not enough */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}

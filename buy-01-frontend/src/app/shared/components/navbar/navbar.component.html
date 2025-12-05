@@ -16,6 +16,22 @@
     <!-- User Actions -->
     <div class="navbar-actions desktop-nav">
       <ng-container *ngIf="isLoggedIn; else loginButton">
+        
+        <!-- Wishlist -->
+        <a routerLink="/wishlist" class="action-btn" title="Wishlist">
+          <lucide-icon [img]="Heart" class="action-icon"></lucide-icon>
+        </a>
+
+        <!-- Cart -->
+        <a routerLink="/cart" class="action-btn" title="Cart">
+          <lucide-icon [img]="ShoppingCart" class="action-icon"></lucide-icon>
+        </a>
+
+        <!-- Orders -->
+        <a routerLink="/orders" class="action-btn" title="My Orders">
+           <lucide-icon [img]="ShoppingBag" class="action-icon"></lucide-icon>
+        </a>
+
         <!-- User Profile Dropdown -->
         <div class="user-profile">
           <div class="dropdown">
@@ -25,7 +41,7 @@
             </button>
             <div class="dropdown-menu" [class.show]="isDropdownOpen">
               <!-- Common Navigation -->
-              <a routerLink="/orders" class="dropdown-item" (click)="closeDropdown()">
+              <a routerLink="/products" class="dropdown-item" (click)="closeDropdown()">
                 <lucide-icon [img]="Home" class="dropdown-icon"></lucide-icon>
                 Products
               </a>
@@ -79,7 +95,7 @@
       <div class="mobile-user-actions">
         <ng-container *ngIf="isLoggedIn; else mobileLoginButton">
           <!-- Common Navigation -->
-          <a routerLink="/orders"
+          <a routerLink="/products"
              routerLinkActive="active"
              class="mobile-nav-link"
              (click)="navigateToProducts()">
@@ -87,8 +103,32 @@
             <span>Products</span>
           </a>
 
+          <a routerLink="/cart"
+             routerLinkActive="active"
+             class="mobile-nav-link"
+             (click)="closeMobileMenu()">
+            <lucide-icon [img]="ShoppingCart" class="nav-icon"></lucide-icon>
+            <span>Cart</span>
+          </a>
+
+          <a routerLink="/wishlist"
+             routerLinkActive="active"
+             class="mobile-nav-link"
+             (click)="closeMobileMenu()">
+            <lucide-icon [img]="Heart" class="nav-icon"></lucide-icon>
+            <span>Wishlist</span>
+          </a>
+
+          <a routerLink="/orders"
+             routerLinkActive="active"
+             class="mobile-nav-link"
+             (click)="closeMobileMenu()">
+            <lucide-icon [img]="ShoppingBag" class="nav-icon"></lucide-icon>
+            <span>My Orders</span>
+          </a>
+
           <!-- My Account Link -->
-          <a routerLink="/my-account"
+          <a routerLink="/seller/my-account"
              routerLinkActive="active"
              class="mobile-nav-link"
              (click)="closeMobileMenu()">

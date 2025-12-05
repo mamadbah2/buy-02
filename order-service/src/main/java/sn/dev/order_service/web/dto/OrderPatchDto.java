@@ -13,5 +13,7 @@ import lombok.Setter;
 public class OrderPatchDto {
     @NotBlank(message = "Status cannot be blank")
     private String status;
+    @NotBlank(message = "Status cannot be blank")
+    private String paymentMethod;
 }
 

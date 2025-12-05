@@ -5,6 +5,8 @@ import { ProductService } from "../../services/product.service";
 import { ProductModels } from "../../models/product.models";
 import { AuthService } from "../../../../auth/services/auth.service";
 import { Subscription } from "rxjs";
+import { CartService } from "../../../cart/services/cart.service";
+import { ToastService } from "../../../../shared/services/toast.service";
 
 @Component({
   selector: "app-product-details",
@@ -25,9 +27,11 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
   private routeSubscription: Subscription | null = null;
 
   private productService = inject(ProductService);
+  private cartService = inject(CartService);
   private activatedRoute = inject(ActivatedRoute);
   private authService = inject(AuthService);
   private location = inject(Location);
+  private toastService = inject(ToastService);
 
   ngOnInit(): void {
     // Subscribe to route parameter changes
@@ -123,13 +127,15 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
     }
 
     if (this.product && this.getQuantityAsNumber(this.product.quantity) > 0) {
-      // TODO: Implement actual cart functionality
-      console.log(
-        `Adding ${this.selectedQuantity} of product ${this.product.id} to cart`,
-      );
-      this.showSuccessMessage(
-        `Added ${this.selectedQuantity} item(s) to cart!`,
-      );
+      this.cartService.addItemToCart(this.product.id, this.selectedQuantity, Number(this.product.price)).subscribe({
+        next: () => {
+          this.toastService.success('Success', `Added ${this.selectedQuantity} item(s) to cart!`);
+        },
+        error: (err) => {
+          console.error('Failed to add to cart', err);
+          this.toastService.error('Error', 'Failed to add to cart. Please try again.');
+        }
+      });
     }
   }
 
@@ -217,8 +223,7 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
   }
 
   private showSuccessMessage(message: string): void {
-    // Simple alert for now - you can replace with a toast notification
-    alert(message);
+    this.toastService.success('Success', message);
   }
 
   private handleError(error: any): void {
