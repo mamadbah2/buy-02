@@ -43,6 +43,18 @@ export class SellerOrdersComponent implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
 
+  get totalRevenue(): number {
+    return this.orders.reduce((acc, order) => acc + order.subTotal, 0);
+  }
+
+  get pendingOrdersCount(): number {
+    return this.orders.filter(o => o.status === 'PENDING').length;
+  }
+
+  get completedOrdersCount(): number {
+    return this.orders.filter(o => ['DELIVERED', 'SHIPPED'].includes(o.status)).length;
+  }
+
   constructor(
     private sellerService: SellerService,
     private authService: AuthService,

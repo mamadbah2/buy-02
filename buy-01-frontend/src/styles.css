@@ -1,3 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Lucide Icons Fix */
+lucide-icon {
+  display: inline-flex;
+}
+lucide-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
 /* Global Styles - Modern Professional Design System */
 
 /* Import Fonts */
