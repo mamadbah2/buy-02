@@ -88,7 +88,7 @@ export class MyOrdersComponent implements OnInit, OnDestroy {
   viewOrderDetails(order: Order): void {
     this.selectedOrder = order;
     document.body.style.overflow = 'hidden'; // Prevent background scrolling
-    this.loadProductDetails(order.items);
+    this.loadProductDetails(order.itemsList);
   }
 
   loadProductDetails(items: OrderItem[]) {

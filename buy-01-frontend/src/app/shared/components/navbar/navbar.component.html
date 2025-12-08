@@ -55,9 +55,13 @@
               <!-- Seller Specific Navigation -->
               <ng-container *ngIf="isSeller">
                 <div class="dropdown-divider"></div>
-                <a routerLink="/seller/my-orders" class="dropdown-item" (click)="closeDropdown()">
+                <a routerLink="/seller/my-products" class="dropdown-item" (click)="closeDropdown()">
                   <lucide-icon [img]="Package" class="dropdown-icon"></lucide-icon>
                   My Products
+                </a>
+                <a routerLink="/seller/orders" class="dropdown-item" (click)="closeDropdown()">
+                  <lucide-icon [img]="ShoppingBag" class="dropdown-icon"></lucide-icon>
+                  Received Orders
                 </a>
               </ng-container>
 

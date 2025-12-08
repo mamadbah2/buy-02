@@ -1,0 +1,262 @@
+<div class="container mx-auto px-4 py-8">
+  <!-- Header -->
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+        <lucide-icon [img]="Package" class="w-8 h-8 text-primary-600"></lucide-icon>
+        Order Management
+      </h1>
+      <p class="text-gray-600 dark:text-gray-400 mt-1">Manage your received orders and update their status</p>
+    </div>
+    
+    <div class="flex items-center gap-2 bg-white dark:bg-gray-800 p-2 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="px-3 py-1 bg-primary-50 dark:bg-primary-900/20 rounded-md">
+        <span class="text-sm font-medium text-primary-700 dark:text-primary-300">Total Orders</span>
+        <span class="ml-2 text-lg font-bold text-primary-800 dark:text-primary-200">{{ orders.length }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-6">
+    <div class="flex flex-col md:flex-row gap-4">
+      <!-- Search -->
+      <div class="flex-1 relative">
+        <lucide-icon [img]="Search" class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"></lucide-icon>
+        <input 
+          type="text" 
+          [(ngModel)]="searchQuery" 
+          (ngModelChange)="onFilterChange()"
+          placeholder="Search by Order ID or Customer Name..." 
+          class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+        >
+      </div>
+
+      <!-- Status Filter -->
+      <div class="w-full md:w-64 relative">
+        <lucide-icon [img]="Filter" class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"></lucide-icon>
+        <select 
+          [(ngModel)]="statusFilter" 
+          (change)="onFilterChange()"
+          class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent appearance-none"
+        >
+          <option value="ALL">All Statuses</option>
+          <option value="PENDING">Pending</option>
+          <option value="CONFIRMED">Confirmed</option>
+          <option value="PROCESSING">Processing</option>
+          <option value="SHIPPED">Shipped</option>
+          <option value="DELIVERED">Delivered</option>
+          <option value="CANCELLED">Cancelled</option>
+        </select>
+        <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+          <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Orders List -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
+            <th class="px-6 py-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Order ID</th>
+            <th class="px-6 py-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
+            <th class="px-6 py-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Customer</th>
+            <th class="px-6 py-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total</th>
+            <th class="px-6 py-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+            <th class="px-6 py-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+          <tr *ngFor="let order of filteredOrders" class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span class="font-mono text-sm text-gray-900 dark:text-white">#{{ order.id.substring(0, 8) }}...</span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="flex items-center text-sm text-gray-600 dark:text-gray-300">
+                <lucide-icon [img]="Calendar" class="w-4 h-4 mr-2 text-gray-400"></lucide-icon>
+                {{ formatDate(order.createdAt) }}
+              </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm font-medium text-gray-900 dark:text-white">{{ order.customerName || 'Unknown' }}</div>
+              <div class="text-xs text-gray-500 dark:text-gray-400">{{ order.customerEmail }}</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm font-bold text-gray-900 dark:text-white">{{ formatPrice(order.subTotal) }}</div>
+              <div class="text-xs text-gray-500 dark:text-gray-400">{{ order.itemsList.length }} items</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span [class]="'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ' + getStatusColor(order.status)">
+                <lucide-icon [img]="getStatusIcon(order.status)" class="w-3 h-3 mr-1"></lucide-icon>
+                {{ order.status }}
+              </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <button 
+                (click)="viewOrderDetails(order)"
+                class="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 font-medium text-sm flex items-center transition-colors"
+              >
+                View Details
+                <lucide-icon [img]="ChevronRight" class="w-4 h-4 ml-1"></lucide-icon>
+              </button>
+            </td>
+          </tr>
+          
+          <tr *ngIf="filteredOrders.length === 0 && !isLoading">
+            <td colspan="6" class="px-6 py-12 text-center">
+              <div class="flex flex-col items-center justify-center">
+                <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-full mb-4">
+                  <lucide-icon [img]="ShoppingBag" class="w-8 h-8 text-gray-400"></lucide-icon>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-1">No orders found</h3>
+                <p class="text-gray-500 dark:text-gray-400">Try adjusting your search or filters</p>
+              </div>
+            </td>
+          </tr>
+
+          <tr *ngIf="isLoading">
+            <td colspan="6" class="px-6 py-12 text-center">
+              <div class="flex justify-center items-center">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+                <span class="ml-3 text-gray-600 dark:text-gray-300">Loading orders...</span>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Order Details Modal -->
+<div *ngIf="selectedOrder" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+  <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+    <!-- Background overlay -->
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" (click)="closeModal()"></div>
+
+    <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+    <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full">
+      <!-- Modal Header -->
+      <div class="bg-gray-50 dark:bg-gray-700/50 px-4 py-3 sm:px-6 flex justify-between items-center border-b border-gray-200 dark:border-gray-700">
+        <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white" id="modal-title">
+          Order Details <span class="text-gray-500 dark:text-gray-400 text-sm ml-2">#{{ selectedOrder.id }}</span>
+        </h3>
+        <button (click)="closeModal()" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 focus:outline-none">
+          <lucide-icon [img]="X" class="w-6 h-6"></lucide-icon>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <!-- Customer Info -->
+          <div class="bg-gray-50 dark:bg-gray-700/30 p-4 rounded-lg">
+            <h4 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">Customer Information</h4>
+            <div class="space-y-2">
+              <p class="text-sm text-gray-900 dark:text-white font-medium">{{ selectedOrder.customerName }}</p>
+              <p class="text-sm text-gray-600 dark:text-gray-300">{{ selectedOrder.customerEmail }}</p>
+              <p class="text-sm text-gray-600 dark:text-gray-300">{{ selectedOrder.shippingAddress }}</p>
+            </div>
+          </div>
+
+          <!-- Order Info -->
+          <div class="bg-gray-50 dark:bg-gray-700/30 p-4 rounded-lg">
+            <h4 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">Order Summary</h4>
+            <div class="space-y-2">
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-600 dark:text-gray-300">Date:</span>
+                <span class="text-gray-900 dark:text-white font-medium">{{ formatDate(selectedOrder.createdAt) }}</span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-600 dark:text-gray-300">Payment Method:</span>
+                <span class="text-gray-900 dark:text-white font-medium">{{ getPaymentMethodLabel(selectedOrder.paymentMethod) }}</span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-600 dark:text-gray-300">Total Amount:</span>
+                <span class="text-primary-600 dark:text-primary-400 font-bold">{{ formatPrice(selectedOrder.subTotal) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Status Update -->
+        <div class="mb-6 border-t border-b border-gray-200 dark:border-gray-700 py-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h4 class="text-sm font-medium text-gray-900 dark:text-white">Order Status</h4>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Update the current status of this order</p>
+            </div>
+            <div class="flex items-center gap-3">
+              <span [class]="'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ' + getStatusColor(selectedOrder.status)">
+                Current: {{ selectedOrder.status }}
+              </span>
+              <div class="relative">
+                <select 
+                  [ngModel]="selectedOrder.status" 
+                  (ngModelChange)="updateStatus(selectedOrder, $event)"
+                  [disabled]="isLoading"
+                  class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                >
+                  <option value="PENDING">Pending</option>
+                  <option value="CONFIRMED">Confirmed</option>
+                  <option value="PROCESSING">Processing</option>
+                  <option value="SHIPPED">Shipped</option>
+                  <option value="DELIVERED">Delivered</option>
+                  <option value="CANCELLED">Cancelled</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Order Items -->
+        <div>
+          <h4 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">Order Items</h4>
+          <div class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+            <ul class="divide-y divide-gray-200 dark:divide-gray-700">
+              <li *ngFor="let item of selectedOrder.itemsList" class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                <div class="flex items-center space-x-4">
+                  <div class="flex-shrink-0 w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-md overflow-hidden">
+                    <img 
+                      [src]="getProductImage(item.productId)" 
+                      alt="{{ item.productName }}" 
+                      class="w-full h-full object-cover"
+                    >
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
+                      {{ item.productName }}
+                    </p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                      Qty: {{ item.quantity }} × {{ formatPrice(item.price) }}
+                    </p>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-sm font-bold text-gray-900 dark:text-white">
+                      {{ formatPrice(item.price * item.quantity) }}
+                    </p>
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="bg-gray-50 dark:bg-gray-700/50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t border-gray-200 dark:border-gray-700">
+        <button 
+          type="button" 
+          (click)="closeModal()"
+          class="w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-800 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

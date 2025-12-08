@@ -44,8 +44,8 @@ export class CartService {
       switchMap(cart => {
         let newQuantity = quantityToAdd;
         
-        if (cart && cart.items) {
-          const existingItem = cart.items.find(item => item.productId === productId);
+        if (cart && cart.itemsList) {
+          const existingItem = cart.itemsList.find(item => item.productId === productId);
           if (existingItem) {
             newQuantity = existingItem.quantity + quantityToAdd;
           }

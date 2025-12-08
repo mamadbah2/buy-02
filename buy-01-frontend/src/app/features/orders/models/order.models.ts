@@ -2,7 +2,7 @@ export interface OrderItem {
   productId: string;
   productName?: string; // Optional, populated by frontend if missing in DTO
   quantity: number;
-  unitPrice: number;
+  price: number;
   totalPrice?: number;
 }
 
@@ -13,7 +13,7 @@ export interface Order {
   status: 'CART' | 'PENDING' | 'CONFIRMED' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
   paymentMethod: string;
   createdAt: string;
-  items: OrderItem[]; // Mapped from orderItemList in backend
+  itemsList: OrderItem[]; // Mapped from orderItemList in backend
 }
 
 export interface CartUpdateRequest {
@@ -40,4 +40,20 @@ export interface UserStatistics {
   totalOrders: number;
   mostPurchasedProducts: ProductStatistic[];
   bestSellingProducts: ProductStatistic[];
+}
+
+export interface SubOrder {
+  id: string;
+  parentOrderId: string;
+  sellerId: string;
+  itemsList: OrderItem[];
+  subTotal: number;
+  status: 'PENDING' | 'CONFIRMED' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
+  createdAt: string;
+  updatedAt: string;
+  userId: string;
+  customerName?: string; // Optional, might need to fetch user details
+  customerEmail?: string;
+  shippingAddress?: string;
+  paymentMethod?: string; // Might come from parent order
 }

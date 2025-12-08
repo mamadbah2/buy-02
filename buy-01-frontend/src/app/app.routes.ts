@@ -48,6 +48,14 @@ export const routes: Routes = [
     canActivate: [sellerGuard], // Only sellers
   },
   {
+    path: "seller/orders",
+    loadComponent: () =>
+      import("./features/seller/components/seller-orders/seller-orders.component").then(
+        (m) => m.SellerOrdersComponent,
+      ),
+    canActivate: [sellerGuard],
+  },
+  {
     path: "seller/edit-product/:id",
     component: EditProductComponent,
     canActivate: [sellerGuard], // Only sellers
