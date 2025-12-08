@@ -8,6 +8,7 @@ import { AuthService } from '../../../../auth/services/auth.service';
 import { ToastService } from '../../../../shared/services/toast.service';
 import { SubOrder, OrderItem } from '../../../orders/models/order.models';
 import { ProductService } from '../../../products/services/product.service';
+import { UserService } from '../../../../shared/services/user.service';
 
 @Component({
   selector: 'app-seller-orders',
@@ -36,6 +37,7 @@ export class SellerOrdersComponent implements OnInit, OnDestroy {
   isLoading = false;
   selectedOrder: SubOrder | null = null;
   productDetails: Map<string, any> = new Map();
+  userDetails: Map<string, any> = new Map();
   
   // Filters
   statusFilter: string = 'ALL';
@@ -59,7 +61,8 @@ export class SellerOrdersComponent implements OnInit, OnDestroy {
     private sellerService: SellerService,
     private authService: AuthService,
     private toastService: ToastService,
-    private productService: ProductService
+    private productService: ProductService,
+    private userService: UserService
   ) {}
 
   ngOnInit(): void {
@@ -89,6 +92,7 @@ export class SellerOrdersComponent implements OnInit, OnDestroy {
           this.orders = orders.sort((a, b) => 
             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
           );
+          this.loadUserDetails(this.orders);
           this.applyFilters();
           this.isLoading = false;
         },
@@ -100,12 +104,47 @@ export class SellerOrdersComponent implements OnInit, OnDestroy {
       });
   }
 
+  loadUserDetails(orders: SubOrder[]) {
+    const userIds = [...new Set(orders.map(o => o.userId).filter(id => id && !this.userDetails.has(id)))];
+    
+    if (userIds.length === 0) return;
+
+    const requests = userIds.map(id => 
+      this.userService.getUserProfile(id).pipe(
+        catchError(() => of(null))
+      )
+    );
+
+    forkJoin(requests)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(users => {
+        users.forEach(user => {
+          if (user) {
+            this.userDetails.set(user.id, user);
+          }
+        });
+        // Trigger change detection or re-apply filters if needed to update view
+        this.applyFilters();
+      });
+  }
+
+  getCustomerName(userId: string): string {
+    const user = this.userDetails.get(userId);
+    return user ? user.name : 'Unknown Customer';
+  }
+
+  getCustomerEmail(userId: string): string {
+    const user = this.userDetails.get(userId);
+    return user ? user.email : '';
+  }
+
   applyFilters(): void {
     this.filteredOrders = this.orders.filter(order => {
+      const customerName = this.getCustomerName(order.userId);
       const matchesStatus = this.statusFilter === 'ALL' || order.status === this.statusFilter;
       const matchesSearch = !this.searchQuery || 
         order.id.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-        (order.customerName && order.customerName.toLowerCase().includes(this.searchQuery.toLowerCase()));
+        (customerName && customerName.toLowerCase().includes(this.searchQuery.toLowerCase()));
       
       return matchesStatus && matchesSearch;
     });

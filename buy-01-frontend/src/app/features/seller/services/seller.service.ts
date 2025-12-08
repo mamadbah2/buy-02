@@ -113,7 +113,8 @@ export class SellerService {
     });
 
     // Get all products and filter by userId on the frontend
-    return this.http.get<ProductResponse[]>(this.apiUrl + `/seller/${currentUserId}`, { headers }).pipe(
+    return this.http.get<any>(this.apiUrl + `/seller/${currentUserId}`, { headers }).pipe(
+      map(response => response.content),
       catchError(this.handleError)
     );
   }

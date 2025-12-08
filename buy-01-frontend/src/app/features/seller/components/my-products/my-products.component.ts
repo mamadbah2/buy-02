@@ -8,6 +8,25 @@ import {
   ConfirmationModalData,
 } from "../../../../shared/components/confirmation-modal/confirmation-modal.component";
 import { ToastService } from "../../../../shared/services/toast.service";
+import { 
+  LucideAngularModule, 
+  ChevronRight, 
+  RefreshCw, 
+  Plus, 
+  Package, 
+  CheckCircle, 
+  PauseCircle, 
+  AlertCircle, 
+  Search, 
+  X, 
+  ArrowUp, 
+  ArrowDown, 
+  LayoutGrid, 
+  List, 
+  Eye, 
+  Edit, 
+  Trash2 
+} from "lucide-angular";
 
 @Component({
   selector: "app-my-products",
@@ -17,11 +36,30 @@ import { ToastService } from "../../../../shared/services/toast.service";
     RouterModule,
     FormsModule,
     ConfirmationModalComponent,
+    LucideAngularModule
   ],
   templateUrl: "./my-products.component.html",
   styleUrls: ["./my-products.component.css"],
 })
 export class MyProductsComponent implements OnInit {
+  // Icons
+  readonly ChevronRight = ChevronRight;
+  readonly RefreshCw = RefreshCw;
+  readonly Plus = Plus;
+  readonly Package = Package;
+  readonly CheckCircle = CheckCircle;
+  readonly PauseCircle = PauseCircle;
+  readonly AlertCircle = AlertCircle;
+  readonly Search = Search;
+  readonly X = X;
+  readonly ArrowUp = ArrowUp;
+  readonly ArrowDown = ArrowDown;
+  readonly LayoutGrid = LayoutGrid;
+  readonly List = List;
+  readonly Eye = Eye;
+  readonly Edit = Edit;
+  readonly Trash2 = Trash2;
+
   products: ProductResponse[] = [];
   filteredProducts: ProductResponse[] = [];
   isLoading = true;
@@ -159,9 +197,9 @@ export class MyProductsComponent implements OnInit {
   }
 
   getStatusClass(quantity: number): string {
-    if (quantity === 0) return "out-of-stock";
-    if (quantity <= 10) return "low-stock";
-    return "active";
+    if (quantity === 0) return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400";
+    if (quantity <= 10) return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400";
+    return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400";
   }
 
   getStatusLabel(quantity: number): string {
@@ -171,9 +209,9 @@ export class MyProductsComponent implements OnInit {
   }
 
   getStockClass(quantity: number): string {
-    if (quantity === 0) return "out-of-stock";
-    if (quantity <= 10) return "low-stock";
-    return "in-stock";
+    if (quantity === 0) return "text-red-600 dark:text-red-400";
+    if (quantity <= 10) return "text-yellow-600 dark:text-yellow-400";
+    return "text-green-600 dark:text-green-400";
   }
 
   getProductImage(product: ProductResponse): string {

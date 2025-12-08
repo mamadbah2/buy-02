@@ -136,11 +136,11 @@
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="flex items-center">
                   <div class="h-8 w-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-xs font-bold text-gray-500 dark:text-gray-400 mr-3">
-                    {{ (order.customerName || 'U').charAt(0).toUpperCase() }}
+                    {{ (getCustomerName(order.userId) || 'U').charAt(0).toUpperCase() }}
                   </div>
                   <div>
-                    <div class="text-sm font-medium text-gray-900 dark:text-white">{{ order.customerName || 'Unknown' }}</div>
-                    <div class="text-xs text-gray-500 dark:text-gray-400">{{ order.customerEmail || 'No email' }}</div>
+                    <div class="text-sm font-medium text-gray-900 dark:text-white">{{ getCustomerName(order.userId) }}</div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">{{ getCustomerEmail(order.userId) || 'No email' }}</div>
                   </div>
                 </div>
               </td>
@@ -207,10 +207,10 @@
           <div class="flex items-center justify-between mb-3">
             <div class="flex items-center">
               <div class="h-8 w-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-xs font-bold text-gray-500 dark:text-gray-400 mr-3">
-                {{ (order.customerName || 'U').charAt(0).toUpperCase() }}
+                {{ (getCustomerName(order.userId) || 'U').charAt(0).toUpperCase() }}
               </div>
               <div>
-                <div class="text-sm font-medium text-gray-900 dark:text-white">{{ order.customerName || 'Unknown' }}</div>
+                <div class="text-sm font-medium text-gray-900 dark:text-white">{{ getCustomerName(order.userId) }}</div>
                 <div class="text-xs text-gray-500 dark:text-gray-400">{{ order.itemsList.length }} items</div>
               </div>
             </div>
@@ -340,17 +340,17 @@
                 <h4 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">Customer</h4>
                 <div class="flex items-center gap-3 mb-4">
                   <div class="h-10 w-10 rounded-full bg-primary-100 dark:bg-primary-900/50 flex items-center justify-center text-primary-700 dark:text-primary-300 font-bold">
-                    {{ (selectedOrder.customerName || 'U').charAt(0).toUpperCase() }}
+                    {{ (getCustomerName(selectedOrder.userId) || 'U').charAt(0).toUpperCase() }}
                   </div>
                   <div>
-                    <p class="text-sm font-bold text-gray-900 dark:text-white">{{ selectedOrder.customerName || 'Unknown' }}</p>
+                    <p class="text-sm font-bold text-gray-900 dark:text-white">{{ getCustomerName(selectedOrder.userId) }}</p>
                     <p class="text-xs text-gray-500 dark:text-gray-400">Customer ID: ...{{ selectedOrder.userId.substring(selectedOrder.userId.length - 6) }}</p>
                   </div>
                 </div>
                 <div class="space-y-3 pt-3 border-t border-gray-100 dark:border-gray-700">
                   <div class="flex items-start gap-2">
                     <lucide-icon [img]="Package" class="w-4 h-4 text-gray-400 mt-0.5"></lucide-icon>
-                    <span class="text-sm text-gray-600 dark:text-gray-300 break-all">{{ selectedOrder.customerEmail || 'No email provided' }}</span>
+                    <span class="text-sm text-gray-600 dark:text-gray-300 break-all">{{ getCustomerEmail(selectedOrder.userId) || 'No email provided' }}</span>
                   </div>
                   <div class="flex items-start gap-2">
                     <lucide-icon [img]="Truck" class="w-4 h-4 text-gray-400 mt-0.5"></lucide-icon>
