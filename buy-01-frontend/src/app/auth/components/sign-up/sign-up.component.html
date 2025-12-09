@@ -1,52 +1,72 @@
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 pt-32 pb-12 flex flex-col justify-center sm:px-6 lg:px-8">
+  <div class="sm:mx-auto sm:w-full sm:max-w-md">
+    <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">Create your account</h2>
+  </div>
 
-    <h2 style="color: #333;">Sign Up</h2>
-    <form [formGroup]="registerForm" (ngSubmit)="handleSubmit()">
-      @if (errorOccured) {
-        <div class="badge-error">{{errorOccured}}</div>
-      }
-        <div class="form-group">
-            <label for="firstName" class="sr-only">First name</label>
-            <input type="text" formControlName="firstName" id="firstName" placeholder="First name">
-          @if (registerForm.get("firstName")?.invalid && registerForm.get("firstName")?.touched) {
-            <div class="error-message">First name incorrect</div>
-          }
-        </div>
-        <div class="form-group">
-            <label for="lastName" class="sr-only">Last name</label>
-            <input type="text" formControlName="lastName" id="lastName" placeholder="Last name">
-          @if (registerForm.get("lastName")?.invalid && registerForm.get("lastName")?.touched) {
-            <div class="error-message" >Last name incorrect</div>
-          }
-        </div>
-        <div class="form-group">
-            <label for="email" class="sr-only">Email address</label>
-            <input type="email" formControlName="email" id="email" placeholder="Email address">
-          @if (registerForm.get("email")?.invalid && registerForm.get("email")?.touched) {
-            <div class="error-message">Email incorrect</div>
-          }
-        </div>
-        <div class="form-group">
-            <label for="password" class="sr-only">Password</label>
-            <input type="password" formControlName="password" id="password" placeholder="Password">
-          @if (registerForm.get("password")?.invalid && registerForm.get("password")?.touched) {
-            <div class="error-message">Password incorrect</div>
-          }
-        </div>
-
-        <div class="checkbox-group">
-            <input type="checkbox" formControlName="isSeller" id="newsletter">
-            <label for="newsletter">Are you a SELLER ?</label>
-        </div>
-
-      @if (isSeller) {
-        <div class="file-upload-container">
-          <input (change)="handleFileSelection($event)" type="file" id="myFileInput" class="file-upload-input">
-          <label for="myFileInput" class="file-upload-label">Choisir un avatar</label>
-          <div class="file-upload-filename" id="selectedFileName">
-            {{selectedFileName}}
+  <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+    <div class="bg-white dark:bg-gray-800 py-8 px-4 shadow sm:rounded-lg sm:px-10 border border-gray-200 dark:border-gray-700">
+      <form [formGroup]="registerForm" (ngSubmit)="handleSubmit()" class="space-y-6">
+        @if (errorOccured) {
+          <div class="bg-red-50 border-l-4 border-red-400 p-4 mb-4">
+            <div class="flex">
+              <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                </svg>
+              </div>
+              <div class="ml-3">
+                <p class="text-sm text-red-700">{{errorOccured}}</p>
+              </div>
+            </div>
           </div>
-        </div>
-      }
+        }
 
-        <button type="submit" class="btn primary-btn">Join us <span class="arrow">&rarr;</span></button>
-    </form>
+        <div>
+          <label for="firstName" class="block text-sm font-medium text-gray-700 dark:text-gray-300">First name</label>
+          <div class="mt-1">
+            <input id="firstName" type="text" formControlName="firstName" required class="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:text-white">
+          </div>
+          @if (registerForm.get("firstName")?.invalid && registerForm.get("firstName")?.touched) {
+            <p class="mt-2 text-sm text-red-600">First name is required</p>
+          }
+        </div>
+
+        <div>
+          <label for="lastName" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Last name</label>
+          <div class="mt-1">
+            <input id="lastName" type="text" formControlName="lastName" required class="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:text-white">
+          </div>
+          @if (registerForm.get("lastName")?.invalid && registerForm.get("lastName")?.touched) {
+            <p class="mt-2 text-sm text-red-600">Last name is required</p>
+          }
+        </div>
+
+        <div>
+          <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email address</label>
+          <div class="mt-1">
+            <input id="email" type="email" formControlName="email" required class="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:text-white">
+          </div>
+          @if (registerForm.get("email")?.invalid && registerForm.get("email")?.touched) {
+            <p class="mt-2 text-sm text-red-600">Please enter a valid email address</p>
+          }
+        </div>
+
+        <div>
+          <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Password</label>
+          <div class="mt-1">
+            <input id="password" type="password" formControlName="password" required class="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:text-white">
+          </div>
+          @if (registerForm.get("password")?.invalid && registerForm.get("password")?.touched) {
+            <p class="mt-2 text-sm text-red-600">Password is required</p>
+          }
+        </div>
+
+        <div>
+          <button type="submit" [disabled]="!registerForm.valid" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+            Sign up
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

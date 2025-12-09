@@ -88,10 +88,13 @@ export class MyOrdersComponent implements OnInit, OnDestroy {
   viewOrderDetails(order: Order): void {
     this.selectedOrder = order;
     document.body.style.overflow = 'hidden'; // Prevent background scrolling
-    this.loadProductDetails(order.itemsList);
+    if (order.items) {
+      this.loadProductDetails(order.items);
+    }
   }
 
   loadProductDetails(items: OrderItem[]) {
+    if (!items) return;
     const itemsToFetch = items.filter(item => !this.productDetails.has(item.productId));
     
     if (itemsToFetch.length === 0) return;

@@ -1,12 +1,12 @@
-<div class="cart-container">
+<div class="cart-container pt-32">
   <!-- Header -->
   <div class="cart-header">
     <h1 class="page-title">
       <lucide-icon [img]="ShoppingBag" class="w-8 h-8 text-primary-600"></lucide-icon>
       Shopping Cart
     </h1>
-    <span class="cart-count" *ngIf="cart?.itemsList?.length">
-      {{ cart?.itemsList?.length }} items
+    <span class="cart-count" *ngIf="cart?.items?.length">
+      {{ cart?.items?.length }} items
     </span>
   </div>
 
@@ -17,7 +17,7 @@
   </div>
 
   <!-- Empty State -->
-  <div *ngIf="!isLoading && (!cart || !cart.itemsList || cart.itemsList.length === 0)" class="empty-state">
+  <div *ngIf="!isLoading && (!cart || !cart.items || cart.items.length === 0)" class="empty-state">
     <div class="empty-icon-container">
       <lucide-icon [img]="ShoppingBag" class="w-10 h-10"></lucide-icon>
     </div>
@@ -30,11 +30,11 @@
   </div>
 
   <!-- Cart Content -->
-  <div *ngIf="!isLoading && cart && cart.itemsList && cart.itemsList.length > 0" class="cart-layout">
+  <div *ngIf="!isLoading && cart && cart.items && cart.items.length > 0" class="cart-layout">
     
     <!-- Cart Items List -->
     <div class="cart-items-section">
-      <div *ngFor="let item of cart.itemsList" class="cart-item">
+      <div *ngFor="let item of cart.items" class="cart-item">
         <!-- Product Image -->
         <div class="item-image-container">
           <img [src]="getProductImage(item.productId)" 

@@ -52,8 +52,8 @@ export class CartComponent implements OnInit {
     this.cartService.getCart().subscribe({
       next: (cart) => {
         this.cart = cart;
-        if (cart && cart.itemsList) {
-          this.loadProductDetails(cart.itemsList);
+        if (cart && cart.items) {
+          this.loadProductDetails(cart.items);
         }
         this.isLoading = false;
       },

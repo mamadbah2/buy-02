@@ -13,7 +13,7 @@ export interface Order {
   status: 'CART' | 'PENDING' | 'CONFIRMED' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
   paymentMethod: string;
   createdAt: string;
-  itemsList: OrderItem[]; // Mapped from orderItemList in backend
+  items: OrderItem[]; // Mapped from orderItemList in backend
 }
 
 export interface CartUpdateRequest {
@@ -46,7 +46,7 @@ export interface SubOrder {
   id: string;
   parentOrderId: string;
   sellerId: string;
-  itemsList: OrderItem[];
+  items: OrderItem[];
   subTotal: number;
   status: 'PENDING' | 'CONFIRMED' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
   createdAt: string;

@@ -1,4 +1,4 @@
-<div class="orders-container">
+<div class="orders-container pt-32">
   <!-- Header -->
   <div class="page-header">
     <h1 class="page-title">
@@ -55,7 +55,7 @@
           </div>
           <div class="info-row">
             <span class="info-label">Items</span>
-            <span class="items-count">{{ order.itemsList.length }} items</span>
+            <span class="items-count">{{ order.items?.length || 0 }} items</span>
           </div>
         </div>
         
@@ -111,7 +111,7 @@
         <div class="items-section">
           <h3>Items Purchased</h3>
           <div class="items-list">
-            <div *ngFor="let item of selectedOrder.itemsList" class="order-item">
+            <div *ngFor="let item of selectedOrder.items" class="order-item">
               <div class="item-icon">
                 <img *ngIf="getProductImage(item.productId) !== 'assets/images/placeholder.png'" 
                      [src]="getProductImage(item.productId)" 

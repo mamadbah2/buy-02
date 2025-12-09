@@ -159,7 +159,7 @@ export class SellerOrdersComponent implements OnInit, OnDestroy {
   viewOrderDetails(order: SubOrder): void {
     this.selectedOrder = order;
     document.body.style.overflow = 'hidden';
-    this.loadProductDetails(order.itemsList);
+    this.loadProductDetails(order.items);
 
     // Fetch parent order for payment details
     if (order.parentOrderId) {
@@ -207,7 +207,7 @@ export class SellerOrdersComponent implements OnInit, OnDestroy {
   updateSelectedOrderProductNames() {
     if (!this.selectedOrder) return;
     
-    const updatedItems = this.selectedOrder.itemsList.map(item => {
+    const updatedItems = this.selectedOrder.items.map(item => {
       const product = this.productDetails.get(item.productId);
       if (product) {
         return { ...item, productName: product.name };
@@ -215,13 +215,13 @@ export class SellerOrdersComponent implements OnInit, OnDestroy {
       return item;
     });
     
-    this.selectedOrder = { ...this.selectedOrder, itemsList: updatedItems };
+    this.selectedOrder = { ...this.selectedOrder, items: updatedItems };
   }
 
   getProductImage(productId: string): string {
     const product = this.productDetails.get(productId);
     if (product && product.images && product.images.length > 0) {
-      return product.images[0].url;
+      return product.images[0].imageUrl;
     }
     return 'assets/images/placeholder.png';
   }

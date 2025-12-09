@@ -1,25 +1,35 @@
-/* Modern Professional Navbar Styles */
+/* Modern Professional Navbar Styles - Floating Notch Design */
 
 .navbar {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--border-primary);
-  position: sticky;
-  top: 0;
-  z-index: var(--z-sticky);
-  width: 100%;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
-  transition: all var(--transition-normal);
+  background: var(--navbar-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--navbar-border);
+  position: fixed;
+  top: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  width: 90%;
+  max-width: 1200px;
+  border-radius: 9999px;
+  box-shadow: var(--navbar-shadow);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0.5rem 0;
+}
+
+.navbar.scrolled {
+  background: var(--navbar-bg);
+  box-shadow: var(--navbar-shadow);
 }
 
 .navbar-container {
-  max-width: 1440px;
-  margin: 0 auto;
-  padding: 0 var(--space-8);
+  width: 100%;
+  padding: 0 1.5rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 80px;
+  height: 3.5rem;
 }
 
 /* Brand/Logo Styling */
@@ -426,17 +436,20 @@
 .mobile-nav {
   display: none;
   position: absolute;
-  top: 100%;
+  top: calc(100% + 0.5rem);
   left: 0;
   right: 0;
-  background: rgba(255, 255, 255, 0.98);
+  background: var(--navbar-bg);
   backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--border-primary);
-  box-shadow: var(--shadow-xl);
-  transform: translateY(-100%);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--navbar-border);
+  border-radius: 1.5rem;
+  box-shadow: var(--navbar-shadow);
+  transform: translateY(-10px);
   opacity: 0;
-  transition: all var(--transition-normal);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: var(--z-dropdown);
+  overflow: hidden;
 }
 
 .mobile-nav.open {
