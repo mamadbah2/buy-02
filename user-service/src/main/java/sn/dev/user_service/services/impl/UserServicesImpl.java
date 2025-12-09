@@ -10,6 +10,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import sn.dev.user_service.data.entities.Role;
 import sn.dev.user_service.data.entities.User;
 import sn.dev.user_service.data.repositories.UserRepositories;
 import sn.dev.user_service.exceptions.UserAlreadyExistsException;
@@ -60,8 +61,8 @@ public class UserServicesImpl implements UserServices {
     }
 
     @Override
-    public List<User> findAllUsers() {
-        return userRepositories.findAll();
+    public List<User> findAllSeller() {
+        return userRepositories.findAllByRole(Role.SELLER);
     }
 
     @Override

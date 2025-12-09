@@ -121,10 +121,10 @@ export class CartComponent implements OnInit {
   }
 
   removeItem(productId: string) {
-    if (!confirm('Remove this item from cart?')) return;
+     if (!this.cart) return;
 
     this.isProcessing = true;
-    this.cartService.removeFromCart(productId).subscribe({
+    this.cartService.removeFromCart(productId, this.cart.id).subscribe({
       next: () => {
         this.loadCart();
         this.isProcessing = false;

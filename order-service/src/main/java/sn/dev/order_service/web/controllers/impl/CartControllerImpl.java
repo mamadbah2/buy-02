@@ -68,6 +68,7 @@ public class CartControllerImpl implements CartController {
 
     @Override
     public ResponseEntity<Void> deleteToCart(String id, String productId) {
+        log.info("DELETE cart item in order: {} for product: {}", id, productId);
         orderService.removeToCart(id, productId);
         return ResponseEntity.noContent().build();
     }

@@ -96,10 +96,10 @@ export class CartService {
   /**
    * Remove an item from the cart
    */
-  removeFromCart(productId: string): Observable<void> {
+  removeFromCart(productId: string, cartId: string): Observable<void> {
     const userId = this.getUserId();
     if (!userId) return throwError(() => new Error('User not authenticated'));
     
-    return this.http.delete<void>(`${this.apiUrl}/${userId}/products/${productId}`);
+    return this.http.delete<void>(`${this.apiUrl}/${cartId}/products/${productId}`);
   }
 }
