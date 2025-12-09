@@ -204,10 +204,9 @@ export class SellerService {
     return this.http
       .patch<SubOrder>(
         `${environment.apiUrl}/api/sub-orders/${subOrderId}/status`, 
-        null, 
+        { status }, 
         { 
-          headers, 
-          params: { status } 
+          headers
         }
       )
       .pipe(catchError(this.handleError));

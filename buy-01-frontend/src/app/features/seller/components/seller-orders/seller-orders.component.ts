@@ -9,6 +9,7 @@ import { ToastService } from '../../../../shared/services/toast.service';
 import { SubOrder, OrderItem } from '../../../orders/models/order.models';
 import { ProductService } from '../../../products/services/product.service';
 import { UserService } from '../../../../shared/services/user.service';
+import { OrderService } from '../../../orders/services/order.service';
 
 @Component({
   selector: 'app-seller-orders',
@@ -62,7 +63,8 @@ export class SellerOrdersComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private toastService: ToastService,
     private productService: ProductService,
-    private userService: UserService
+    private userService: UserService,
+    private orderService: OrderService
   ) {}
 
   ngOnInit(): void {
@@ -158,28 +160,62 @@ export class SellerOrdersComponent implements OnInit, OnDestroy {
     this.selectedOrder = order;
     document.body.style.overflow = 'hidden';
     this.loadProductDetails(order.itemsList);
+
+    // Fetch parent order for payment details
+    if (order.parentOrderId) {
+      this.orderService.getOrderById(order.parentOrderId)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (parentOrder) => {
+            if (this.selectedOrder && this.selectedOrder.id === order.id) {
+              this.selectedOrder = {
+                ...this.selectedOrder,
+                paymentMethod: parentOrder.paymentMethod
+              };
+            }
+          },
+          error: (err) => console.error('Error fetching parent order', err)
+        });
+    }
   }
 
   loadProductDetails(items: OrderItem[]) {
     const itemsToFetch = items.filter(item => !this.productDetails.has(item.productId));
     
-    if (itemsToFetch.length === 0) return;
+    if (itemsToFetch.length > 0) {
+      const requests = itemsToFetch.map(item => 
+        this.productService.getOneProduct(item.productId).pipe(
+          catchError(() => of(null))
+        )
+      );
 
-    const requests = itemsToFetch.map(item => 
-      this.productService.getOneProduct(item.productId).pipe(
-        catchError(() => of(null))
-      )
-    );
-
-    forkJoin(requests)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(products => {
-        products.forEach(product => {
-          if (product) {
-            this.productDetails.set(product.id, product);
-          }
+      forkJoin(requests)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(products => {
+          products.forEach(product => {
+            if (product) {
+              this.productDetails.set(product.id, product);
+            }
+          });
+          this.updateSelectedOrderProductNames();
         });
-      });
+    } else {
+      this.updateSelectedOrderProductNames();
+    }
+  }
+
+  updateSelectedOrderProductNames() {
+    if (!this.selectedOrder) return;
+    
+    const updatedItems = this.selectedOrder.itemsList.map(item => {
+      const product = this.productDetails.get(item.productId);
+      if (product) {
+        return { ...item, productName: product.name };
+      }
+      return item;
+    });
+    
+    this.selectedOrder = { ...this.selectedOrder, itemsList: updatedItems };
   }
 
   getProductImage(productId: string): string {
@@ -193,6 +229,10 @@ export class SellerOrdersComponent implements OnInit, OnDestroy {
   closeModal(): void {
     this.selectedOrder = null;
     document.body.style.overflow = '';
+  }
+
+  printOrder(): void {
+    window.print();
   }
 
   updateStatus(order: SubOrder, newStatus: string): void {
