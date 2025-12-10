@@ -57,7 +57,7 @@ public class ProductSeed implements CommandLineRunner {
 
         List<Product> products = new ArrayList<>();
 
-        // Générer 500 produits fictifs avec des données variées
+        // Générer 1500 produits fictifs avec des données variées
         for (int i = 0; i < 1500; i++) {
             Product product = new Product();
 

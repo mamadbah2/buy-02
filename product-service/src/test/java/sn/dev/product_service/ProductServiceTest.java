@@ -15,11 +15,16 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
 import sn.dev.product_service.data.entities.Product;
 import sn.dev.product_service.data.repo.ProductRepo;
+import sn.dev.product_service.data.repo.elastic.ProductSearchRepo;
 import sn.dev.product_service.services.impl.ProductServiceImpl;
 
 import static org.mockito.Mockito.when;
@@ -30,6 +35,9 @@ import static org.mockito.Mockito.times;
 public class ProductServiceTest {
     @Mock
     private ProductRepo productRepo;
+
+    @Mock
+    private ProductSearchRepo productSearchRepo;
 
     @InjectMocks
     private ProductServiceImpl productService;
@@ -99,9 +107,10 @@ public class ProductServiceTest {
     @Test
     void testGetByUserId_EmptyResult() {
         String userId = "nonexistentUser";
-        when(productRepo.findByUserId(userId)).thenReturn(Collections.emptyList());
+        Pageable pageable = PageRequest.of(0, 10);
+        when(productRepo.findByUserId(userId, pageable)).thenReturn(Page.empty());
 
-        List<Product> products = productService.getByUserId(userId);
+        Page<Product> products = productService.getByUserId(userId, pageable);
 
         assertNotNull(products);
         assertTrue(products.isEmpty());
@@ -169,19 +178,21 @@ public class ProductServiceTest {
                 new Product("Product 2", "Description 2", 20.0, 10, userId));
 
         // Mock repository behavior
-        when(productRepo.findByUserId(userId)).thenReturn(mockProducts);
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Product> mockPage = new PageImpl<>(mockProducts, pageable, mockProducts.size());
+        when(productRepo.findByUserId(userId, pageable)).thenReturn(mockPage);
 
         // Call service method
-        List<Product> userProducts = productService.getByUserId(userId);
+        Page<Product> userProducts = productService.getByUserId(userId, pageable);
 
         // Assert results
         assertNotNull(userProducts);
-        assertEquals(2, userProducts.size());
-        assertEquals("Product 1", userProducts.get(0).getName());
-        assertEquals("Product 2", userProducts.get(1).getName());
+        assertEquals(2, userProducts.getTotalElements());
+        assertEquals("Product 1", userProducts.getContent().get(0).getName());
+        assertEquals("Product 2", userProducts.getContent().get(1).getName());
 
         // Verify repository interaction
-        verify(productRepo, times(1)).findByUserId(userId);
+        verify(productRepo, times(1)).findByUserId(userId, pageable);
 
         System.out.println("✅ PRODUCT/SERVICE : testGetProductsByUserId() passed successfully.");
     }

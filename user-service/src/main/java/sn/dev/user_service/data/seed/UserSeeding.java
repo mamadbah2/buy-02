@@ -64,7 +64,7 @@ public class UserSeeding implements CommandLineRunner {
 
     private User createUser(Role role, int index) {
         User user = new User();
-        log.info("creating user {} {}", role, index);
+        if (index % 100 == 0) log.info("creating user {} {}...", role, index);
         // Générer un nom complet
         String firstName = faker.name().firstName();
         String lastName = faker.name().lastName();
