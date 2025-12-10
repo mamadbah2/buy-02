@@ -36,6 +36,10 @@ export class UserService {
     private authService: AuthService
   ) {}
 
+  getUserById(id: string): Observable<UserProfile> {
+    return this.http.get<UserProfile>(`${this.apiUrl}/${id}/custom`);
+  }
+
   getCurrentUserId(): string | null {
      // On recupere l'id du current user from the local storage
     let userString = localStorage.getItem('currentUser');

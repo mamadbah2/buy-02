@@ -7,7 +7,7 @@ import { LucideAngularModule, Package, Calendar, CreditCard, ChevronRight, X, Sh
 import { OrderService } from '../../services/order.service';
 import { AuthService } from '../../../../auth/services/auth.service';
 import { ProductService } from '../../../products/services/product.service';
-import { Order, OrderItem } from '../../models/order.models';
+import { Order, OrderItem, SubOrder } from '../../models/order.models';
 import { ToastService } from '../../../../shared/services/toast.service';
 
 @Component({
@@ -31,7 +31,9 @@ export class MyOrdersComponent implements OnInit, OnDestroy {
   readonly AlertCircle = AlertCircle;
 
   orders: Order[] = [];
+  subOrders: SubOrder[] = [];
   isLoading = false;
+  isLoadingSubOrders = false;
   selectedOrder: Order | null = null;
   productDetails: Map<string, any> = new Map();
   private destroy$ = new Subject<void>();
@@ -87,9 +89,75 @@ export class MyOrdersComponent implements OnInit, OnDestroy {
 
   viewOrderDetails(order: Order): void {
     this.selectedOrder = order;
+    this.subOrders = [];
     document.body.style.overflow = 'hidden'; // Prevent background scrolling
-    if (order.items) {
+    
+    if (order.status !== 'CART') {
+      this.isLoadingSubOrders = true;
+      this.orderService.getSubOrdersByOrderId(order.id)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (subOrders) => {
+            this.subOrders = subOrders;
+            const allItems = subOrders.flatMap(so => so.items);
+            this.loadProductDetails(allItems);
+            this.isLoadingSubOrders = false;
+            this.checkAndSyncOrderStatus();
+          },
+          error: (err) => {
+            console.error('Error loading sub-orders', err);
+            this.isLoadingSubOrders = false;
+            // Fallback to order items if sub-orders fail
+            if (order.items) {
+              this.loadProductDetails(order.items);
+            }
+          }
+        });
+    } else if (order.items) {
       this.loadProductDetails(order.items);
+    }
+  }
+
+  checkAndSyncOrderStatus(): void {
+    if (!this.selectedOrder || this.subOrders.length === 0) return;
+
+    const allDelivered = this.subOrders.every(so => so.status === 'DELIVERED');
+    
+    if (allDelivered && this.selectedOrder.status !== 'DELIVERED') {
+      this.orderService.updateOrderStatus(this.selectedOrder.id, 'DELIVERED', this.selectedOrder.paymentMethod)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (updatedOrder) => {
+            if (this.selectedOrder) {
+              this.selectedOrder.status = updatedOrder.status;
+              // Update the order in the main list as well
+              const index = this.orders.findIndex(o => o.id === updatedOrder.id);
+              if (index !== -1) {
+                this.orders[index] = updatedOrder;
+              }
+              this.toastService.showSuccess('Order marked as Delivered');
+            }
+          },
+          error: (err) => console.error('Failed to sync order status', err)
+        });
+    }
+  }
+
+  getOrderProgress(): number {
+    if (!this.subOrders.length) return 0;
+    const totalProgress = this.subOrders.reduce((acc, so) => acc + this.getStatusProgress(so.status), 0);
+    return Math.round(totalProgress / this.subOrders.length);
+  }
+
+  getStatusProgress(status: string): number {
+    switch (status) {
+      case 'PENDING': return 10;
+      case 'CONFIRMED': return 25;
+      case 'PROCESSING': return 50;
+      case 'SHIPPED': return 75;
+      case 'DELIVERED': return 100;
+      case 'CANCELLED': return 0;
+      default: return 0;
     }
   }
 

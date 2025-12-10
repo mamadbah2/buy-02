@@ -146,7 +146,7 @@
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="text-sm font-bold text-gray-900 dark:text-white">{{ formatPrice(order.subTotal) }}</div>
-                <div class="text-xs text-gray-500 dark:text-gray-400">{{ order.items.length }} items</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">{{ order.items?.length || 0 }} items</div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <span [class]="'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ' + getStatusColor(order.status)">
@@ -211,7 +211,7 @@
               </div>
               <div>
                 <div class="text-sm font-medium text-gray-900 dark:text-white">{{ getCustomerName(order.userId) }}</div>
-                <div class="text-xs text-gray-500 dark:text-gray-400">{{ order.items.length }} items</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">{{ order.items?.length || 0 }} items</div>
               </div>
             </div>
             <div class="text-right">
@@ -299,17 +299,19 @@
                 </h4>
                 <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm">
                   <ul class="divide-y divide-gray-200 dark:divide-gray-700">
-                    <li *ngFor="let item of selectedOrder.items" class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                    <li *ngFor="let item of selectedOrder.items" 
+                        (click)="navigateToProduct(item.productId)"
+                        class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors cursor-pointer group">
                       <div class="flex items-center gap-4">
-                        <div class="flex-shrink-0 w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-600">
+                        <div class="flex-shrink-0 w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-600 group-hover:border-primary-500 transition-colors">
                           <img 
                             [src]="getProductImage(item.productId)" 
                             alt="{{ item.productName }}" 
-                            class="w-full h-full object-cover"
+                            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           >
                         </div>
                         <div class="flex-1 min-w-0">
-                          <p class="text-base font-medium text-gray-900 dark:text-white truncate mb-1">
+                          <p class="text-base font-medium text-gray-900 dark:text-white truncate mb-1 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
                             {{ item.productName }}
                           </p>
                           <p class="text-sm text-gray-500 dark:text-gray-400">

@@ -7,6 +7,7 @@ import { AuthService } from "../../../../auth/services/auth.service";
 import { Subscription } from "rxjs";
 import { CartService } from "../../../cart/services/cart.service";
 import { ToastService } from "../../../../shared/services/toast.service";
+import { UserService, UserProfile } from "../../../../shared/services/user.service";
 
 @Component({
   selector: "app-product-details",
@@ -17,6 +18,7 @@ import { ToastService } from "../../../../shared/services/toast.service";
 })
 export class ProductDetailsComponent implements OnInit, OnDestroy {
   product: ProductModels | null = null;
+  seller: UserProfile | null = null;
   selectedImage: string = "";
   selectedQuantity: number = 1;
   relatedProducts: ProductModels[] = [];
@@ -27,6 +29,7 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
   private routeSubscription: Subscription | null = null;
 
   private productService = inject(ProductService);
+  private userService = inject(UserService);
   private cartService = inject(CartService);
   private activatedRoute = inject(ActivatedRoute);
   private authService = inject(AuthService);
@@ -54,6 +57,7 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
     this.hasError = false;
     this.errorMessage = "";
     this.product = null;
+    this.seller = null;
     this.selectedImage = "";
     this.selectedQuantity = 1;
     this.relatedProducts = [];
@@ -66,6 +70,13 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
           this.selectedImage = this.getProductImage(product);
           this.isLoading = false;
           this.loadRelatedProducts();
+          
+          if (product.userId && !this.isGuest) {
+            this.userService.getUserById(product.userId).subscribe({
+              next: (user) => this.seller = user,
+              error: (err) => console.error('Error loading seller:', err)
+            });
+          }
         },
         error: (err) => {
           console.error("Error loading product:", err);

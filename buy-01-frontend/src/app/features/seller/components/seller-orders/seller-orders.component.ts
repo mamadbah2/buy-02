@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { Subject, takeUntil, switchMap, forkJoin, of, catchError } from 'rxjs';
 import { LucideAngularModule, Package, Calendar, CreditCard, ChevronRight, X, ShoppingBag, Clock, CheckCircle, Truck, AlertCircle, Filter, Search } from 'lucide-angular';
 import { SellerService } from '../../services/seller.service';
@@ -64,7 +65,8 @@ export class SellerOrdersComponent implements OnInit, OnDestroy {
     private toastService: ToastService,
     private productService: ProductService,
     private userService: UserService,
-    private orderService: OrderService
+    private orderService: OrderService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -74,6 +76,11 @@ export class SellerOrdersComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  navigateToProduct(productId: string): void {
+    this.closeModal();
+    this.router.navigate(['/products', productId]);
   }
 
   loadOrders(): void {
@@ -91,9 +98,18 @@ export class SellerOrdersComponent implements OnInit, OnDestroy {
       )
       .subscribe({
         next: (orders) => {
-          this.orders = orders.sort((a, b) => 
+          console.log('Fetched seller orders:', orders);
+          // Ensure items is an array to prevent errors and map itemsList if present
+          const safeOrders = (orders || []).map((o: any) => ({ 
+            ...o, 
+            items: o.items || o.itemsList || [],
+            parentOrderId: o.parentOrderId || o.orderId // Fallback for parentOrderId
+          }));
+          
+          this.orders = safeOrders.sort((a: SubOrder, b: SubOrder) => 
             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
           );
+          console.log('Sorted seller orders:', this.orders);
           this.loadUserDetails(this.orders);
           this.applyFilters();
           this.isLoading = false;
@@ -161,21 +177,28 @@ export class SellerOrdersComponent implements OnInit, OnDestroy {
     document.body.style.overflow = 'hidden';
     this.loadProductDetails(order.items);
 
+    console.log('Viewing order details:', order);
+    console.log('Parent Order ID:', order.parentOrderId);
+
     // Fetch parent order for payment details
     if (order.parentOrderId) {
       this.orderService.getOrderById(order.parentOrderId)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: (parentOrder) => {
+            console.log('Fetched parent order:', parentOrder);
             if (this.selectedOrder && this.selectedOrder.id === order.id) {
               this.selectedOrder = {
                 ...this.selectedOrder,
                 paymentMethod: parentOrder.paymentMethod
               };
+              console.log('Updated selected order with payment method:', this.selectedOrder.paymentMethod);
             }
           },
           error: (err) => console.error('Error fetching parent order', err)
         });
+    } else {
+      console.warn('No parentOrderId found for this sub-order');
     }
   }
 

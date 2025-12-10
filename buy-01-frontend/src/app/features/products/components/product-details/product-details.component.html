@@ -134,6 +134,16 @@
             </div>
           </div>
 
+          <!-- Seller Info -->
+          <div *ngIf="seller && !isGuest" class="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-6 mb-8 border border-gray-100 dark:border-gray-700 flex items-center gap-4">
+            <img [src]="seller.avatar || 'https://ui-avatars.com/api/?name=' + seller.name" alt="{{seller.name}}" class="w-16 h-16 rounded-full object-cover border-2 border-indigo-100 dark:border-indigo-900">
+            <div>
+              <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Sold by</h3>
+              <p class="font-bold text-gray-900 dark:text-white text-lg">{{ seller.name }}</p>
+              <p class="text-sm text-gray-500 dark:text-gray-400">{{ seller.email }}</p>
+            </div>
+          </div>
+
           <div class="mt-auto space-y-6">
             <!-- Quantity Selector -->
             <div class="flex items-center gap-4" *ngIf="getQuantityAsNumber(product.quantity) > 0">

@@ -1,8 +1,9 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
-import { Order, OrderCommandRequest, UserStatistics } from '../models/order.models';
+import { Order, OrderCommandRequest, UserStatistics, SubOrder } from '../models/order.models';
 
 @Injectable({
   providedIn: 'root'
@@ -19,6 +20,15 @@ export class OrderService {
     return this.http.get<Order[]>(`${this.apiUrl}/user/${userId}`);
   }
 
+  getSubOrdersByOrderId(orderId: string): Observable<SubOrder[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/${orderId}/sub-orders`).pipe(
+      map(subOrders => subOrders.map(so => ({
+        ...so,
+        items: so.items || so.itemsList || []
+      })))
+    );
+  }
+
   getUserStatistics(userId: string): Observable<UserStatistics> {
     return this.http.get<UserStatistics>(`${this.apiUrl}/statistics/user/${userId}`);
   }
@@ -31,6 +41,10 @@ export class OrderService {
       status: 'PENDING',
       paymentMethod
     };
-    return this.http.patch<Order>(`${this.apiUrl}/${orderId}/command`, body);
+    return this.http.post<Order>(`${this.apiUrl}/${orderId}/confirm`, body);
+  }
+
+  updateOrderStatus(orderId: string, status: string, paymentMethod: string): Observable<Order> {
+    return this.http.patch<Order>(`${this.apiUrl}/${orderId}/command`, { status, paymentMethod });
   }
 }
