@@ -3,6 +3,10 @@ pipeline {
     agent any
 
     // NOTE: Tous les stages s'exécutent sur le même agent (Jenkins choisit un agent disponible)
+    tools {
+        maven 'maven-plugin'  // Nom de l'installation Maven dans Jenkins
+        nodejs 'node-plugin' // Nom de l'installation NodeJS dans Jenkins
+    }
 
     options {
         buildDiscarder(logRotator(numToKeepStr: '10'))
