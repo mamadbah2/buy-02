@@ -17,7 +17,7 @@ pipeline {
         GITHUB_TOKEN = credentials('GITHUB_TOKEN')
 
         // Préfixe pour éviter les conflits entre projets
-        PROJECT_NAME = 'safe-zone'
+        PROJECT_NAME = 'buy-02'
 
         // Media Service credentials
         MONGODB_URI = credentials('MONGODB_URI_BOBO')
@@ -198,7 +198,7 @@ pipeline {
                                 "SUPABASE_API_KEY=${env.SUPABASE_API_KEY}",
                                 "SUPABASE_BUCKET_NAME=${env.SUPABASE_BUCKET_NAME}",
                                 "MONGODB_URI=${env.MONGODB_URI}",
-                                "MONGODB_DATABASE=${env.MONGODB_DATABASE}"updateCart
+                                "MONGODB_DATABASE=${env.MONGODB_DATABASE}"
                             ]) {
                                 sh '''
                                     docker-compose up -d
