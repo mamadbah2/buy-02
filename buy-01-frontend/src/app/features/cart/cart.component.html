@@ -1,0 +1,128 @@
+<div class="cart-container pt-32">
+  <!-- Header -->
+  <div class="cart-header">
+    <h1 class="page-title">
+      <lucide-icon [img]="ShoppingBag" class="w-8 h-8 text-primary-600"></lucide-icon>
+      Shopping Cart
+    </h1>
+    <span class="cart-count" *ngIf="cart?.items?.length">
+      {{ cart?.items?.length }} items
+    </span>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="spinner"></div>
+    <p class="text-secondary">Loading your cart...</p>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!isLoading && (!cart || !cart.items || cart.items.length === 0)" class="empty-state">
+    <div class="empty-icon-container">
+      <lucide-icon [img]="ShoppingBag" class="w-10 h-10"></lucide-icon>
+    </div>
+    <h2 class="empty-title">Your cart is empty</h2>
+    <p class="empty-text">Looks like you haven't added anything to your cart yet.</p>
+    <a routerLink="/products" class="continue-shopping-btn">
+      Start Shopping
+      <lucide-icon [img]="ArrowRight" class="w-4 h-4"></lucide-icon>
+    </a>
+  </div>
+
+  <!-- Cart Content -->
+  <div *ngIf="!isLoading && cart && cart.items && cart.items.length > 0" class="cart-layout">
+    
+    <!-- Cart Items List -->
+    <div class="cart-items-section">
+      <div *ngFor="let item of cart.items" class="cart-item">
+        <!-- Product Image -->
+        <div class="item-image-container">
+          <img [src]="getProductImage(item.productId)" 
+               [alt]="getProductName(item.productId)"
+               class="item-image">
+        </div>
+
+        <!-- Product Details -->
+        <div class="item-details">
+          <div>
+            <a [routerLink]="['/products', item.productId]" class="item-name">
+              {{ getProductName(item.productId) }}
+            </a>
+            <div class="item-price">{{ formatPrice(getProductPrice(item.productId)) }}</div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="item-actions">
+          <div class="quantity-controls">
+            <button (click)="updateQuantity(item, -1)" 
+                    [disabled]="isProcessing || item.quantity <= 1" 
+                    class="qty-btn"
+                    title="Decrease quantity">
+              <lucide-icon [img]="Minus" class="w-4 h-4"></lucide-icon>
+            </button>
+            <span class="qty-value">{{ item.quantity }}</span>
+            <button (click)="updateQuantity(item, 1)" 
+                    [disabled]="isProcessing" 
+                    class="qty-btn"
+                    title="Increase quantity">
+              <lucide-icon [img]="Plus" class="w-4 h-4"></lucide-icon>
+            </button>
+          </div>
+
+          <button (click)="removeItem(item.productId)" 
+                  [disabled]="isProcessing" 
+                  class="remove-btn"
+                  title="Remove item">
+            <lucide-icon [img]="Trash2" class="w-4 h-4"></lucide-icon>
+            Remove
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Order Summary -->
+    <div class="summary-card">
+      <h2 class="summary-title">Order Summary</h2>
+      
+      <div class="summary-row">
+        <span>Subtotal</span>
+        <span>{{ formatPrice(cart.total) }}</span>
+      </div>
+      <div class="summary-row">
+        <span>Shipping</span>
+        <span>Free</span>
+      </div>
+      
+      <div class="summary-row total">
+        <span>Total</span>
+        <span class="total-amount">{{ formatPrice(cart.total) }}</span>
+      </div>
+
+      <div class="payment-section">
+        <label class="payment-label">Payment Method</label>
+        <select [(ngModel)]="selectedPaymentMethod" class="payment-select">
+          <option value="WAVE">Wave</option>
+          <option value="ORANGE_MONEY">Orange Money</option>
+          <option value="CASH_ON_DELIVERY">Cash on Delivery</option>
+          <option value="PAYPAL">PayPal</option>
+          <option value="DEBIT_CARD">Credit Card</option>
+        </select>
+      </div>
+
+      <button (click)="checkout()" 
+              [disabled]="isProcessing" 
+              class="checkout-btn">
+        <lucide-icon [img]="CreditCard" class="w-5 h-5"></lucide-icon>
+        {{ isProcessing ? 'Processing...' : 'Checkout Now' }}
+      </button>
+
+      <div class="mt-4 text-center">
+        <a routerLink="/products" class="text-sm text-gray-500 hover:text-primary-600 flex items-center justify-center gap-1">
+          <lucide-icon [img]="ArrowLeft" class="w-4 h-4"></lucide-icon>
+          Continue Shopping
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

@@ -17,7 +17,7 @@ public interface UserClient {
     @GetMapping("/{id}")
     UserResponseDto getById(@PathVariable("id") String id);
 
-    @GetMapping
+    @GetMapping("/seller")
     List<UserResponseDto> getAllUsers();
 }
 

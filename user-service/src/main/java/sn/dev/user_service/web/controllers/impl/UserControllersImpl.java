@@ -126,9 +126,9 @@ public class UserControllersImpl implements UserControllers {
 
     //    Cette méthode retourne une liste simple sans HATEOAS pour des cas d'utilisation spécifiques exemple les autres service
     @Override
-    @GetMapping("api/users")
-    public ResponseEntity<List<UserResponse>> getAllUsers() {
-        List<User> users = userServices.findAllUsers();
+    @GetMapping("api/users/seller")
+    public ResponseEntity<List<UserResponse>> getAllSeller() {
+        List<User> users = userServices.findAllSeller();
         List<UserResponse> userResponses = users.stream()
                 .map(UserResponse::new)
                 .collect(Collectors.toList());

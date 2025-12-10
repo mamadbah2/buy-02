@@ -36,6 +36,10 @@ export class UserService {
     private authService: AuthService
   ) {}
 
+  getUserById(id: string): Observable<UserProfile> {
+    return this.http.get<UserProfile>(`${this.apiUrl}/${id}/custom`);
+  }
+
   getCurrentUserId(): string | null {
      // On recupere l'id du current user from the local storage
     let userString = localStorage.getItem('currentUser');
@@ -69,6 +73,25 @@ export class UserService {
 
     // Assuming the backend has an endpoint to get current user info
     return this.http.get<any>(`${this.apiUrl}/${this.getCurrentUserId()}/custom`, { headers })
+      .pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Get user profile by ID
+   */
+  getUserProfile(userId: string): Observable<UserProfile> {
+    const token = this.authService.getToken();
+    
+    if (!token) {
+      return throwError(() => new Error('No authentication token available'));
+    }
+
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Accept': 'application/json'
+    });
+
+    return this.http.get<any>(`${this.apiUrl}/${userId}/custom`, { headers })
       .pipe(catchError(this.handleError));
   }
 

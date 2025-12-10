@@ -9,6 +9,7 @@ import { catchError, map } from "rxjs/operators";
 import { environment } from "../../../../environments/environment";
 import { AuthService } from "../../../auth/services/auth.service";
 import { JwtService } from "../../../shared/services/jwt.service";
+import { SubOrder } from "../../orders/models/order.models";
 
 export interface CreateProductRequest {
   name: string;
@@ -112,12 +113,9 @@ export class SellerService {
     });
 
     // Get all products and filter by userId on the frontend
-    return this.http.get<ProductResponse[]>(this.apiUrl, { headers }).pipe(
-      catchError(this.handleError),
-      // Filter products to only return those belonging to the current user
-      map((products: ProductResponse[]) =>
-        products.filter((product) => product.userId === currentUserId),
-      ),
+    return this.http.get<any>(this.apiUrl + `/seller/${currentUserId}`, { headers }).pipe(
+      map(response => response.content),
+      catchError(this.handleError)
     );
   }
 
@@ -170,6 +168,47 @@ export class SellerService {
 
     return this.http
       .delete(`${this.apiUrl}/${id}`, { headers })
+      .pipe(catchError(this.handleError));
+  }
+
+  getSellerOrders(sellerId: string): Observable<SubOrder[]> {
+    const token = this.authService.getToken();
+    if (!token) {
+      return throwError(() => new Error("No authentication token available"));
+    }
+
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+      Accept: "application/json",
+    });
+
+    return this.http
+      .get<any>(`${environment.apiUrl}/api/sub-orders/seller/${sellerId}`, { headers })
+      .pipe(
+        map(response => response.content),
+        catchError(this.handleError)
+      );
+  }
+
+  updateSubOrderStatus(subOrderId: string, status: string): Observable<SubOrder> {
+    const token = this.authService.getToken();
+    if (!token) {
+      return throwError(() => new Error("No authentication token available"));
+    }
+
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+
+    return this.http
+      .patch<SubOrder>(
+        `${environment.apiUrl}/api/sub-orders/${subOrderId}/status`, 
+        { status }, 
+        { 
+          headers
+        }
+      )
       .pipe(catchError(this.handleError));
   }
 

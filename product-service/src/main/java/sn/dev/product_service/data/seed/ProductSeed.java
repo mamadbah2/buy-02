@@ -31,6 +31,9 @@ public class ProductSeed implements CommandLineRunner {
     public void run(String... args) {
         // Vider la base de données au démarrage (optionnel)
         if (productRepo.count() == 0) {
+            log.info("🧹 La collection de produits est vide. Démarrage du processus de seed...");
+            // Vider les index ElasticSearch existants
+            productSearchRepo.deleteAll();
             seedProducts();
         }
     }
@@ -40,7 +43,7 @@ public class ProductSeed implements CommandLineRunner {
         log.info("🔄 Récupération des utilisateurs depuis user-service...");
         List<UserResponse> users;
         try {
-            users = userServiceClient.getAllUsers();
+            users = userServiceClient.getAllSeller();
             if (users.isEmpty()) {
                 log.warn("⚠️ Aucun utilisateur trouvé dans user-service. Veuillez démarrer user-service en premier.");
                 return;
@@ -90,6 +93,12 @@ public class ProductSeed implements CommandLineRunner {
         }
 
         log.info("💡 Les images seront créées automatiquement par media-service au démarrage");
+    }
+
+    private void reindexProductsOnElasticSearch() {
+        productSearchRepo.deleteAll();
+        List<Product> allProducts = productRepo.findAll();
+        productSearchRepo.saveAll(allProducts);
     }
 
     private String getRandomCategory() {

@@ -18,6 +18,6 @@ public interface UserServiceClient {
     @GetMapping("/{id}")
     UserResponse getUserById(@PathVariable("id") String id);
 
-    @GetMapping
-    List<UserResponse> getAllUsers();
+    @GetMapping("/seller")
+    List<UserResponse> getAllSeller();
 }

@@ -1,198 +1,153 @@
-/*
-import { TestBed } from '@angular/core/testing';
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { ProductService } from './product.service';
-import { ProductModels } from '../models/product.models'; // Adaptez le chemin si nécessaire
-import { environment } from '../../../../environments/environment';
+import { TestBed } from "@angular/core/testing";
+import {
+  HttpClientTestingModule,
+  HttpTestingController,
+} from "@angular/common/http/testing";
 
-// Suite de tests pour ProductService
-describe('ProductService', () => {
+import { ProductService } from "./product.service";
+import { ProductModels, ProductPage } from "../models/product.models";
+import { environment } from "../../../../environments/environment";
+
+describe("ProductService", () => {
   let service: ProductService;
   let httpMock: HttpTestingController;
   const apiUrl = environment.apiUrl;
 
-  // Configuration exécutée avant chaque test
+  const mockProducts: ProductModels[] = [
+    {
+      id: "1",
+      name: "Product A",
+      description: "Desc A",
+      price: "100",
+      quantity: "50",
+      userId: "seller-1",
+      images: [
+        {
+          id: "img-1",
+          imageUrl: "image_a.png",
+          productId: "1",
+        },
+      ],
+    },
+    {
+      id: "2",
+      name: "Product B",
+      description: "Desc B",
+      price: "250",
+      quantity: "20",
+      userId: "seller-2",
+      images: [
+        {
+          id: "img-2",
+          imageUrl: "image_b.png",
+          productId: "2",
+        },
+      ],
+    },
+  ];
+
+  const mockPage: ProductPage = {
+    content: mockProducts,
+    totalElements: mockProducts.length,
+    totalPages: 1,
+    size: 20,
+    number: 0,
+    numberOfElements: mockProducts.length,
+    first: true,
+    last: true,
+    empty: false,
+  };
+
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [
-        // Importer le module de test HTTP
-        HttpClientTestingModule
-      ],
-      providers: [
-        // Le service que nous voulons tester
-        ProductService
-      ]
+      imports: [HttpClientTestingModule],
     });
 
-    // Injection des dépendances pour le test
     service = TestBed.inject(ProductService);
     httpMock = TestBed.inject(HttpTestingController);
   });
 
-  // Vérification après chaque test pour s'assurer qu'il n'y a pas de requêtes inattendues
   afterEach(() => {
     httpMock.verify();
   });
 
-  // Test de base pour s'assurer que le service est bien créé
-  it('should be created', () => {
+  it("should be created", () => {
     expect(service).toBeTruthy();
   });
 
-  // ======================================================
-  // Tests pour la méthode getProductList()
-  // ======================================================
-  describe('getProductList', () => {
-    it('should return a list of products on successful GET request', () => {
-      // 1. Arrange: Préparer les données de test
-      const mockProducts: ProductModels[] = [
-        {
-          id: '1',
-          name: 'Product A',
-          description: 'Desc A',
-          price: '100', // <-- MODIFIÉ : number -> string
-          quantity: '50', // <-- AJOUTÉ
-          userId: 'user-xyz-789', // <-- AJOUTÉ
-          images: [ // <-- AJOUTÉ
-            {
-              id: 'img-101',
-              imageUrl: 'image_product_a.jpg',
-              productId: '1' // Doit correspondre à l'id du produit
-            }
-          ]
-        },
-        {
-          id: '2',
-          name: 'Product B',
-          description: 'Desc B',
-          price: '200', // <-- MODIFIÉ : number -> string
-          quantity: '35', // <-- AJOUTÉ
-          userId: 'user-xyz-789', // <-- AJOUTÉ
-          images: [ // <-- AJOUTÉ
-            {
-              id: 'img-102',
-              imageUrl: 'image_product_b_1.jpg',
-              productId: '2'
-            },
-            {
-              id: 'img-103',
-              imageUrl: 'image_product_b_2.jpg',
-              productId: '2'
-            }
-          ]
-        }
-      ];
-      let actualProducts: ProductModels[] | undefined;
+  describe("getProductList", () => {
+    it("should request paginated products with default params", () => {
+      let actualResponse: ProductPage | undefined;
 
-      // 2. Act: Appeler la méthode du service
-      service.getProductList().subscribe(products => {
-        actualProducts = products;
+      service.getProductList().subscribe((response) => {
+        actualResponse = response;
       });
 
-      // 3. Assert (HTTP Level): Vérifier que la requête HTTP a bien été faite
-      // On s'attend à une seule requête vers cette URL
-      const req = httpMock.expectOne(`${apiUrl}/api/products`);
-      // On vérifie que la méthode est bien GET
-      expect(req.request.method).toBe('GET');
+      const req = httpMock.expectOne(
+        (request) => request.url === `${apiUrl}/api/products`,
+      );
 
-      // 4. Act (HTTP Level): Simuler la réponse du serveur en "flushant" les données
-      req.flush(mockProducts);
+      expect(req.request.method).toBe("GET");
+      expect(req.request.params.get("page")).toBe("0");
+      expect(req.request.params.get("size")).toBe("20");
+      expect(req.request.params.get("sortBy")).toBe("id");
+      expect(req.request.params.get("sortDirection")).toBe("DESC");
 
-      // 5. Assert: Vérifier que les données reçues par le subscribe sont correctes
-      expect(actualProducts).toEqual(mockProducts);
+      req.flush(mockPage);
+      expect(actualResponse).toEqual(mockPage);
     });
 
-    it('should propagate errors on failed GET request', () => {
-      // 1. Arrange
-      const mockError = { status: 500, statusText: 'Internal Server Error' };
-      let actualError: any;
+    it("should override pagination params when provided", () => {
+      service
+        .getProductList({ page: 2, size: 12, sortBy: "price", sortDirection: "ASC" })
+        .subscribe();
 
-      // 2. Act
+      const req = httpMock.expectOne(
+        (request) => request.url === `${apiUrl}/api/products`,
+      );
+
+      expect(req.request.params.get("page")).toBe("2");
+      expect(req.request.params.get("size")).toBe("12");
+      expect(req.request.params.get("sortBy")).toBe("price");
+      expect(req.request.params.get("sortDirection")).toBe("ASC");
+
+      req.flush(mockPage);
+    });
+
+    it("should propagate errors", () => {
+      const mockError = { status: 500, statusText: "Server Error" };
+      let capturedError: any;
+
       service.getProductList().subscribe({
-        next: () => fail('should have failed with an error'), // Le test échoue si on reçoit des données
-        error: (err) => {
-          actualError = err;
-        }
+        error: (err) => (capturedError = err),
       });
 
-      // 3. Assert (HTTP Level)
-      const req = httpMock.expectOne(`${apiUrl}/api/products`);
-      expect(req.request.method).toBe('GET');
+      const req = httpMock.expectOne(
+        (request) => request.url === `${apiUrl}/api/products`,
+      );
+      req.flush("boom", mockError);
 
-      // 4. Act (HTTP Level): Simuler une erreur serveur
-      req.flush('Something went wrong', mockError);
-
-      // 5. Assert
-      expect(actualError).toBeTruthy();
-      expect(actualError.status).toBe(500);
+      expect(capturedError).toBeTruthy();
+      expect(capturedError.status).toBe(500);
     });
   });
 
-  // ======================================================
-  // Tests pour la méthode getOneProduct()
-  // ======================================================
-  describe('getOneProduct', () => {
-    it('should return a single product on successful GET request', () => {
-      // 1. Arrange
-      const mockProduct: ProductModels = {
-        id: '1',
-        name: 'Product A',
-        description: 'Desc A',
-        price: '100', // <-- MODIFIÉ : number -> string
-        quantity: '50', // <-- AJOUTÉ
-        userId: 'user-xyz-789', // <-- AJOUTÉ
-        images: [ // <-- AJOUTÉ
-          {
-            id: 'img-101',
-            imageUrl: 'image_product_a.jpg',
-            productId: '1' // Doit correspondre à l'id du produit
-          }
-        ]
-      };
-      const productId = '123';
-      let actualProduct: ProductModels | undefined;
+  describe("getOneProduct", () => {
+    it("should fetch a single product", () => {
+      const targetId = "123";
+      let receivedProduct: ProductModels | undefined;
 
-      // 2. Act
-      service.getOneProduct(productId).subscribe(product => {
-        actualProduct = product;
+      service.getOneProduct(targetId).subscribe((product) => {
+        receivedProduct = product;
       });
 
-      // 3. Assert (HTTP Level)
-      const req = httpMock.expectOne(`${apiUrl}/api/products/${productId}`);
-      expect(req.request.method).toBe('GET');
+      const req = httpMock.expectOne(
+        `${apiUrl}/api/products/${targetId}`,
+      );
+      expect(req.request.method).toBe("GET");
 
-      // 4. Act (HTTP Level)
-      req.flush(mockProduct);
-
-      // 5. Assert
-      expect(actualProduct).toEqual(mockProduct);
-    });
-
-    it('should handle 404 Not Found error', () => {
-      // 1. Arrange
-      const mockError = { status: 404, statusText: 'Not Found' };
-      const productId = '999'; // Un ID qui n'existe pas
-      let actualError: any;
-
-      // 2. Act
-      service.getOneProduct(productId).subscribe({
-        next: () => fail('should have failed with a 404 error'),
-        error: (err) => {
-          actualError = err;
-        }
-      });
-
-      // 3. Assert (HTTP Level)
-      const req = httpMock.expectOne(`${apiUrl}/api/products/${productId}`);
-      expect(req.request.method).toBe('GET');
-
-      // 4. Act (HTTP Level)
-      req.flush('Product not found', mockError);
-
-      // 5. Assert
-      expect(actualError).toBeTruthy();
-      expect(actualError.status).toBe(404);
+      req.flush(mockProducts[0]);
+      expect(receivedProduct).toEqual(mockProducts[0]);
     });
   });
 });
-*/

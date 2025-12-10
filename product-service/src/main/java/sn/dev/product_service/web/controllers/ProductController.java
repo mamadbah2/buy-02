@@ -47,9 +47,10 @@ public interface ProductController {
             @RequestParam(required = false) Double minPrice,
             @RequestParam(required = false) Double maxPrice,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,
-            @RequestParam(defaultValue = "id") String sortBy,
-            @RequestParam(defaultValue = "DESC") String sortDirection);
+            @RequestParam(defaultValue = "20") int size);
+
+    @GetMapping("/suggest")
+    java.util.List<String> suggest(@RequestParam(name = "query") String query);
 
     @PreAuthorize("hasAuthority('SELLER')")
     @PutMapping("/{id}")

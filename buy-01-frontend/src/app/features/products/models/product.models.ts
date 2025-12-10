@@ -9,3 +9,28 @@ export interface ProductModels {
   userId: string;
   images: MediaModels[];
 }
+
+export interface PaginatedResponse<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
+  numberOfElements: number;
+  first: boolean;
+  last: boolean;
+  empty: boolean;
+}
+
+export interface ProductPage extends PaginatedResponse<ProductModels> {}
+
+export interface ProductQueryParams {
+  page?: number;
+  size?: number;
+}
+
+export interface ProductSearchParams {
+  query?: string;
+  minPrice?: number;
+  maxPrice?: number;
+}

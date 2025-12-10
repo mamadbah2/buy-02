@@ -7,7 +7,7 @@ import sn.dev.order_service.web.dto.OrderResponseDto;
 
 @RequestMapping("/api/cart")
 public interface CartController {
-    @GetMapping("/{id}")
+    @GetMapping("user/{id}")
     ResponseEntity<OrderResponseDto> getUserCart(@PathVariable String id);
 
     @PatchMapping("/{id}")

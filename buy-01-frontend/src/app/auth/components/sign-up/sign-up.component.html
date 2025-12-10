@@ -1,52 +1,84 @@
+<div class="bg-white dark:bg-gray-800/50 py-8 px-4 shadow-none sm:shadow-none lg:shadow-none rounded-none sm:rounded-none border-none">
+  <div class="mb-8 text-center lg:text-left">
+    <h2 class="text-3xl font-bold text-gray-900 dark:text-white hidden lg:block">Create Account</h2>
+    <p class="mt-2 text-gray-600 dark:text-gray-400 hidden lg:block">Join us today! It takes less than a minute.</p>
+  </div>
 
-    <h2 style="color: #333;">Sign Up</h2>
-    <form [formGroup]="registerForm" (ngSubmit)="handleSubmit()">
-      @if (errorOccured) {
-        <div class="badge-error">{{errorOccured}}</div>
-      }
-        <div class="form-group">
-            <label for="firstName" class="sr-only">First name</label>
-            <input type="text" formControlName="firstName" id="firstName" placeholder="First name">
-          @if (registerForm.get("firstName")?.invalid && registerForm.get("firstName")?.touched) {
-            <div class="error-message">First name incorrect</div>
-          }
-        </div>
-        <div class="form-group">
-            <label for="lastName" class="sr-only">Last name</label>
-            <input type="text" formControlName="lastName" id="lastName" placeholder="Last name">
-          @if (registerForm.get("lastName")?.invalid && registerForm.get("lastName")?.touched) {
-            <div class="error-message" >Last name incorrect</div>
-          }
-        </div>
-        <div class="form-group">
-            <label for="email" class="sr-only">Email address</label>
-            <input type="email" formControlName="email" id="email" placeholder="Email address">
-          @if (registerForm.get("email")?.invalid && registerForm.get("email")?.touched) {
-            <div class="error-message">Email incorrect</div>
-          }
-        </div>
-        <div class="form-group">
-            <label for="password" class="sr-only">Password</label>
-            <input type="password" formControlName="password" id="password" placeholder="Password">
-          @if (registerForm.get("password")?.invalid && registerForm.get("password")?.touched) {
-            <div class="error-message">Password incorrect</div>
-          }
-        </div>
-
-        <div class="checkbox-group">
-            <input type="checkbox" formControlName="isSeller" id="newsletter">
-            <label for="newsletter">Are you a SELLER ?</label>
-        </div>
-
-      @if (isSeller) {
-        <div class="file-upload-container">
-          <input (change)="handleFileSelection($event)" type="file" id="myFileInput" class="file-upload-input">
-          <label for="myFileInput" class="file-upload-label">Choisir un avatar</label>
-          <div class="file-upload-filename" id="selectedFileName">
-            {{selectedFileName}}
+  <form [formGroup]="registerForm" (ngSubmit)="handleSubmit()" class="space-y-5">
+    @if (errorOccured) {
+      <div class="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 p-4 mb-4 rounded-r-md">
+        <div class="flex">
+          <div class="flex-shrink-0">
+            <svg class="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+          <div class="ml-3">
+            <p class="text-sm text-red-700 dark:text-red-300">{{errorOccured}}</p>
           </div>
         </div>
-      }
+      </div>
+    }
 
-        <button type="submit" class="btn primary-btn">Join us <span class="arrow">&rarr;</span></button>
-    </form>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <label for="firstName" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">First name</label>
+        <input id="firstName" type="text" formControlName="firstName" required class="appearance-none block w-full px-3 py-3 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent sm:text-sm dark:bg-gray-800 dark:text-white transition-all">
+        @if (registerForm.get("firstName")?.invalid && registerForm.get("firstName")?.touched) {
+          <p class="mt-1 text-sm text-red-600 dark:text-red-400">Required</p>
+        }
+      </div>
+
+      <div>
+        <label for="lastName" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Last name</label>
+        <input id="lastName" type="text" formControlName="lastName" required class="appearance-none block w-full px-3 py-3 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent sm:text-sm dark:bg-gray-800 dark:text-white transition-all">
+        @if (registerForm.get("lastName")?.invalid && registerForm.get("lastName")?.touched) {
+          <p class="mt-1 text-sm text-red-600 dark:text-red-400">Required</p>
+        }
+      </div>
+    </div>
+
+    <div>
+      <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email address</label>
+      <input id="email" type="email" formControlName="email" required class="appearance-none block w-full px-3 py-3 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent sm:text-sm dark:bg-gray-800 dark:text-white transition-all">
+      @if (registerForm.get("email")?.invalid && registerForm.get("email")?.touched) {
+        <p class="mt-1 text-sm text-red-600 dark:text-red-400">Valid email required</p>
+      }
+    </div>
+
+    <div>
+      <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
+      <input id="password" type="password" formControlName="password" required class="appearance-none block w-full px-3 py-3 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent sm:text-sm dark:bg-gray-800 dark:text-white transition-all">
+      @if (registerForm.get("password")?.invalid && registerForm.get("password")?.touched) {
+        <p class="mt-1 text-sm text-red-600 dark:text-red-400">Password required</p>
+      }
+    </div>
+
+    <div class="flex items-center">
+      <input id="isSeller" type="checkbox" formControlName="isSeller" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600">
+      <label for="isSeller" class="ml-2 block text-sm text-gray-900 dark:text-gray-300 font-medium">
+        I want to sell products
+      </label>
+    </div>
+
+    @if (isSeller) {
+      <div class="animate-fade-in p-4 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Profile Picture (Required for Sellers)</label>
+        <div class="flex items-center gap-4">
+          <label class="cursor-pointer inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
+            <svg class="w-5 h-5 mr-2 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+            Choose File
+            <input type="file" class="hidden" (change)="handleFileSelection($event)" accept="image/*">
+          </label>
+          <span class="text-sm text-gray-500 dark:text-gray-400 truncate max-w-[150px]">{{ selectedFileName }}</span>
+        </div>
+      </div>
+    }
+
+    <div>
+      <button type="submit" [disabled]="!registerForm.valid" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-lg shadow-indigo-500/30 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:-translate-y-0.5">
+        Create Account
+      </button>
+    </div>
+  </form>
+</div>

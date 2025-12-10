@@ -13,7 +13,7 @@ import jakarta.validation.constraints.NotNull;
 public class OrderRequestDto {
     @NotBlank(message = "userId cannot be blank")
     private String userId;
-    @NotBlank(message = "Order payment method cannot be blank")
+
     private String paymentMethod;
     @NotBlank(message = "Status cannot be blank")
     private String status;

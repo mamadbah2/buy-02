@@ -5,6 +5,9 @@ import { ProductService } from "../../services/product.service";
 import { ProductModels } from "../../models/product.models";
 import { AuthService } from "../../../../auth/services/auth.service";
 import { Subscription } from "rxjs";
+import { CartService } from "../../../cart/services/cart.service";
+import { ToastService } from "../../../../shared/services/toast.service";
+import { UserService, UserProfile } from "../../../../shared/services/user.service";
 
 @Component({
   selector: "app-product-details",
@@ -15,6 +18,7 @@ import { Subscription } from "rxjs";
 })
 export class ProductDetailsComponent implements OnInit, OnDestroy {
   product: ProductModels | null = null;
+  seller: UserProfile | null = null;
   selectedImage: string = "";
   selectedQuantity: number = 1;
   relatedProducts: ProductModels[] = [];
@@ -25,9 +29,12 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
   private routeSubscription: Subscription | null = null;
 
   private productService = inject(ProductService);
+  private userService = inject(UserService);
+  private cartService = inject(CartService);
   private activatedRoute = inject(ActivatedRoute);
   private authService = inject(AuthService);
   private location = inject(Location);
+  private toastService = inject(ToastService);
 
   ngOnInit(): void {
     // Subscribe to route parameter changes
@@ -50,6 +57,7 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
     this.hasError = false;
     this.errorMessage = "";
     this.product = null;
+    this.seller = null;
     this.selectedImage = "";
     this.selectedQuantity = 1;
     this.relatedProducts = [];
@@ -62,6 +70,13 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
           this.selectedImage = this.getProductImage(product);
           this.isLoading = false;
           this.loadRelatedProducts();
+          
+          if (product.userId && !this.isGuest) {
+            this.userService.getUserById(product.userId).subscribe({
+              next: (user) => this.seller = user,
+              error: (err) => console.error('Error loading seller:', err)
+            });
+          }
         },
         error: (err) => {
           console.error("Error loading product:", err);
@@ -81,17 +96,20 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
 
   private loadRelatedProducts(): void {
     // Load related products (mock for now)
-    this.productService.getProductList().subscribe({
-      next: (products) => {
-        // Filter out current product and take first 4
-        this.relatedProducts = products
-          .filter((p) => p.id !== this.product?.id)
-          .slice(0, 4);
-      },
+    this.productService
+      .getProductList({ page: 0, size: 8 })
+      .subscribe({
+        next: (response) => {
+          const products = response.content ?? [];
+          // Filter out current product and take first 4
+          this.relatedProducts = products
+            .filter((p) => p.id !== this.product?.id)
+            .slice(0, 4);
+        },
       error: (err) => {
         console.error("Error loading related products:", err);
       },
-    });
+      });
   }
 
   selectImage(imageUrl: string): void {
@@ -120,13 +138,15 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
     }
 
     if (this.product && this.getQuantityAsNumber(this.product.quantity) > 0) {
-      // TODO: Implement actual cart functionality
-      console.log(
-        `Adding ${this.selectedQuantity} of product ${this.product.id} to cart`,
-      );
-      this.showSuccessMessage(
-        `Added ${this.selectedQuantity} item(s) to cart!`,
-      );
+      this.cartService.addItemToCart(this.product.id, this.selectedQuantity, Number(this.product.price)).subscribe({
+        next: () => {
+          this.toastService.success('Success', `Added ${this.selectedQuantity} item(s) to cart!`);
+        },
+        error: (err) => {
+          console.error('Failed to add to cart', err);
+          this.toastService.error('Error', 'Failed to add to cart. Please try again.');
+        }
+      });
     }
   }
 
@@ -214,8 +234,7 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
   }
 
   private showSuccessMessage(message: string): void {
-    // Simple alert for now - you can replace with a toast notification
-    alert(message);
+    this.toastService.success('Success', message);
   }
 
   private handleError(error: any): void {

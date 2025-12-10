@@ -2,11 +2,13 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { Subject, takeUntil } from 'rxjs';
-import { LucideAngularModule, Edit3, User, Mail, Camera, Save, X, Key } from 'lucide-angular';
+import { Subject, takeUntil, switchMap } from 'rxjs';
+import { LucideAngularModule, Edit3, User, Mail, Camera, Save, X, Key, ShoppingBag, DollarSign, TrendingUp, Package } from 'lucide-angular';
 import { AuthService } from '../../../../auth/services/auth.service';
 import { ToastService } from '../../../../shared/services/toast.service';
 import { UserService, UserProfile } from '../../../../shared/services/user.service';
+import { OrderService } from '../../../orders/services/order.service';
+import { UserStatistics } from '../../../orders/models/order.models';
 
 @Component({
   selector: 'app-my-account',
@@ -24,8 +26,13 @@ export class MyAccountComponent implements OnInit, OnDestroy {
   readonly Save = Save;
   readonly X = X;
   readonly Key = Key;
+  readonly ShoppingBag = ShoppingBag;
+  readonly DollarSign = DollarSign;
+  readonly TrendingUp = TrendingUp;
+  readonly Package = Package;
 
   userProfile: UserProfile | null = null;
+  userStatistics: UserStatistics | null = null;
   editForm: FormGroup;
   isEditMode = false;
   isLoading = false;
@@ -36,6 +43,7 @@ export class MyAccountComponent implements OnInit, OnDestroy {
   constructor(
     private authService: AuthService,
     private userService: UserService,
+    private orderService: OrderService,
     private formBuilder: FormBuilder,
     private router: Router,
     private toastService: ToastService
@@ -61,23 +69,51 @@ export class MyAccountComponent implements OnInit, OnDestroy {
 
   private loadUserProfile(): void {
     this.isLoading = true;
-    this.userService.getCurrentUserProfile()
-      .pipe(takeUntil(this.destroy$))
+
+    this.authService.getCurrentUser()
+      .pipe(
+        takeUntil(this.destroy$),
+        switchMap(user => {
+          if (!user?.id) {
+            throw new Error('User ID not found');
+          }
+          this.loadUserStatistics(user.id);
+          return this.userService.getUserProfile(user.id);
+        })
+      )
       .subscribe({
-        next: (userProfile) => {
-          console.log('User profile loaded:', userProfile);
-          this.userProfile = userProfile;
+        next: (profile) => {
+          this.userProfile = profile;
+          this.editForm.patchValue({
+            name: profile.name,
+            email: profile.email
+          });
           this.isLoading = false;
         },
         error: (error) => {
-          console.error('Error loading user profile:', error);
-          this.toastService.showError(error.message || 'Failed to load user profile');
+          console.error('Error loading profile:', error);
+          this.toastService.showError('Failed to load profile');
           this.isLoading = false;
-          
-          // Fallback to AuthService if UserService fails
-          this.loadUserProfileFromAuth();
         }
       });
+  }
+
+  private loadUserStatistics(userId: string): void {
+    this.orderService.getUserStatistics(userId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (stats) => {
+          this.userStatistics = stats;
+        },
+        error: (error) => {
+          console.error('Error loading statistics:', error);
+          // Don't show error toast for stats as it's secondary info
+        }
+      });
+  }
+
+  formatCurrency(amount: number): string {
+    return new Intl.NumberFormat('fr-SN', { style: 'currency', currency: 'XOF' }).format(amount);
   }
 
   private loadUserProfileFromAuth(): void {

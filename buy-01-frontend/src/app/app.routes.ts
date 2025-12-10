@@ -22,21 +22,20 @@ export const routes: Routes = [
     component: ProductDetailsComponent,
     // Allow guest access to product details
   },
-  // TODO: Create cart and orders components later
-  // {
-  //   path: "cart",
-  //   loadComponent: () =>
-  //     import("./features/cart/cart.component").then((m) => m.CartComponent),
-  //   canActivate: [authGuard], // Only logged-in users
-  // },
-  // {
-  //   path: "orders",
-  //   loadComponent: () =>
-  //     import("./features/orders/orders.component").then(
-  //       (m) => m.OrdersComponent,
-  //     ),
-  //   canActivate: [authGuard], // Only logged-in users
-  // },
+  {
+    path: "cart",
+    loadComponent: () =>
+      import("./features/cart/cart.component").then((m) => m.CartComponent),
+    canActivate: [authGuard], // Only logged-in users
+  },
+  {
+    path: "orders",
+    loadComponent: () =>
+      import("./features/orders/components/my-orders/my-orders.component").then(
+        (m) => m.MyOrdersComponent,
+      ),
+    canActivate: [authGuard], // Only logged-in users
+  },
 
   {
     path: "seller/my-products",
@@ -47,6 +46,14 @@ export const routes: Routes = [
     path: "seller/create-product",
     component: CreateProductComponent,
     canActivate: [sellerGuard], // Only sellers
+  },
+  {
+    path: "seller/orders",
+    loadComponent: () =>
+      import("./features/seller/components/seller-orders/seller-orders.component").then(
+        (m) => m.SellerOrdersComponent,
+      ),
+    canActivate: [sellerGuard],
   },
   {
     path: "seller/edit-product/:id",

@@ -52,6 +52,7 @@ public class CartControllerImpl implements CartController {
     }
 
     @Override
+    // Ajoute un produit dans le panier de l'utilisateur ou update la quantite si ce dernier existe'
     public ResponseEntity<OrderResponseDto> updateCart(String id, OrderItemPatchDto orderItemPatchDto) {
         // Récupère l'id du produit depuis le DTO
         final String productId = orderItemPatchDto.getProductId();
@@ -67,6 +68,7 @@ public class CartControllerImpl implements CartController {
 
     @Override
     public ResponseEntity<Void> deleteToCart(String id, String productId) {
+        log.info("DELETE cart item in order: {} for product: {}", id, productId);
         orderService.removeToCart(id, productId);
         return ResponseEntity.noContent().build();
     }

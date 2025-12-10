@@ -53,7 +53,8 @@ public class SecurityConfig {
                         ).permitAll()
                         .requestMatchers(
                                 HttpMethod.GET,
-                                "/api/users"
+                                "/api/users",
+                                "/api/users/seller"
                         ).permitAll()
                         .requestMatchers(
                                 HttpMethod.GET,

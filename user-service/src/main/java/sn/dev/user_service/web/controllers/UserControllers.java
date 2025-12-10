@@ -14,6 +14,6 @@ public interface UserControllers {
     ResponseEntity<LoginResponse> login(LoginRequests loginRequests);
     ResponseEntity<UserResponse> getUser(String userID);
     ResponseEntity<CollectionModel<UserResponse>> getUsers(int page, int size, String sortBy, String sortDirection);
-    ResponseEntity<List<UserResponse>> getAllUsers();
+    ResponseEntity<List<UserResponse>> getAllSeller();
     ResponseEntity<UserResponse> register(UserRequests userRequests);
 }
