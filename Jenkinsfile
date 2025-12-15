@@ -103,7 +103,7 @@ pipeline {
                            echo "🔎 Sonar pour ${svc}..."
                            dir(svc) {
                                // Move the Sonar wrapper and credentials inside each parallel branch
-                               withSonarQubeEnv('safe-zone-mr-jenk') {
+                               withSonarQubeEnv('sonarqube_mamadbah') {
                                    withCredentials([string(credentialsId: 'SONAR_USER_TOKEN', variable: 'SONAR_USER_TOKEN')]) {
                                        def jacocoOption = (svc in ['product-service','user-service','media-service']) ?
                                            "-Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml" : ""
@@ -131,7 +131,7 @@ pipeline {
                    parallelQuality['frontend'] = {
                        echo "🔎 Sonar pour Frontend Angular..."
                        dir('buy-01-frontend') {
-                           withSonarQubeEnv('safe-zone-mr-jenk') {
+                           withSonarQubeEnv('sonarqube_mamadbah') {
                                withCredentials([string(credentialsId: 'SONAR_USER_TOKEN', variable: 'SONAR_USER_TOKEN')]) {
                                    sh """
                                        npm install --save-dev sonarqube-scanner --cache ${NPM_CONFIG_CACHE}
