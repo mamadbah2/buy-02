@@ -18,7 +18,7 @@ pipeline {
     environment {
         DOCKER_HUB_USER = 'mamadbah2'
         IMAGE_VERSION = "${env.BUILD_NUMBER}"
-        GITHUB_TOKEN = credentials('GITHUB_TOKEN')
+        GITHUB_TOKEN = credentials('GITHUB_TOKEN_TEXT')
 
         // Préfixe pour éviter les conflits entre projets
         PROJECT_NAME = 'buy-02'
