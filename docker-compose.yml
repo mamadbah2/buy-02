@@ -90,6 +90,8 @@ services:
     environment:
       <<: *common-env
       DOCKER_MEDIA_SERVICE_URL: http://media-service:8083/api/media
+      ELASTICSEARCH_HOST: http://vps-77043236.vps.ovh.ca
+      ELASTICSEARCH_PORT: 9200
     healthcheck:
       <<: *healthcheck-defaults
       test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
