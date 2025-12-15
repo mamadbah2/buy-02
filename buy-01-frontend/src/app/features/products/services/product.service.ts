@@ -16,7 +16,9 @@ export class ProductService {
   private apiUrl = environment.apiUrl;
   private readonly defaultQuery: Required<ProductQueryParams> = {
     page: 0,
-    size: 20
+    size: 20,
+    sortBy: "id",
+    sortDirection: "DESC"
   };
 
   constructor(private httpClient: HttpClient) {}
