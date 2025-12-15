@@ -66,7 +66,7 @@ pipeline {
                     steps {
                         echo '🚀 Build et Tests des Services Backend...'
                         script {
-                            def services = ['discovery-service', 'config-service', 'api-gateway', 'product-service', 'user-service', 'media-service']
+                            def services = ['discovery-service', 'config-service', 'api-gateway', 'product-service', 'user-service', 'media-service', 'order-service']
                             services.each { svc ->
                                 echo "🔨 Build et test de ${svc}..."
                                 sh """
@@ -94,7 +94,7 @@ pipeline {
            steps {
                echo '🔍 Analyses Sonar en parallèle + attente des Quality Gates...'
                script {
-                   def services = ['discovery-service','config-service','api-gateway','product-service','user-service','media-service']
+                   def services = ['discovery-service','config-service','api-gateway','product-service','user-service','media-service','order-service']
                    def parallelQuality = [:]
 
                    // Backend services
@@ -166,7 +166,7 @@ pipeline {
             steps {
                 echo '🐳 Construction des images Docker en parallèle...'
                 script {
-                    def services = ['eureka-server', 'config-service', 'api-gateway', 'product-service', 'user-service', 'media-service', 'frontend']
+                    def services = ['eureka-server', 'config-service', 'api-gateway', 'product-service', 'user-service', 'media-service', 'order-service', 'frontend']
                     def parallelBuilds = [:]
 
                     services.each { service ->
@@ -244,7 +244,7 @@ pipeline {
                         sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
                     }
 
-                    def services = ['frontend', 'product-service', 'user-service', 'media-service', 'api-gateway', 'config-service', 'eureka-server']
+                    def services = ['frontend', 'product-service', 'user-service', 'media-service', 'order-service', 'api-gateway', 'config-service', 'eureka-server']
                     def parallelPushes = [:]
 
                     services.each { service ->

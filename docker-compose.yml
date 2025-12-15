@@ -103,6 +103,33 @@ services:
     networks:
       - microservices-network
 
+  order-service:
+    <<: *spring-service-defaults
+    build:
+      context: ./order-service
+      dockerfile: Dockerfile
+    container_name: order-service
+    ports:
+      - "8084:8084"
+    environment:
+      <<: *common-env
+      DOCKER_PRODUCT_SERVICE_URL: http://product-service:8082/api/products
+      DOCKER_USER_SERVICE_URL: http://user-service:8081/api/users
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "curl", "-f", "http://localhost:8084/actuator/health"]
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      config-service:
+        condition: service_healthy
+      product-service:
+        condition: service_healthy
+      user-service:
+        condition: service_healthy
+    networks:
+      - microservices-network
+
   user-service:
     <<: *spring-service-defaults
     build:
@@ -147,6 +174,8 @@ services:
       product-service:
         condition: service_healthy
       media-service:
+        condition: service_healthy
+      order-service:
         condition: service_healthy
     networks:
       - microservices-network

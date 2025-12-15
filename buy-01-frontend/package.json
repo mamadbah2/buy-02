@@ -7,7 +7,7 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "test:headless": "ng test --browsers=ChromeHeadless --watch=false --code-coverage"
+    "test:headless": "ng test --browsers=ChromeHeadlessCI --watch=false --code-coverage"
   },
   "private": true,
   "dependencies": {
@@ -37,6 +37,7 @@
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
     "postcss": "^8.5.6",
+    "puppeteer": "^24.33.0",
     "tailwindcss": "^3.4.18",
     "typescript": "~5.8.3"
   }
