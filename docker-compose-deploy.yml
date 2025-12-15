@@ -31,6 +31,8 @@ x-common-env: &common-env
 networks:
   microservices-network:
     driver: bridge
+  shared-network:
+    external: true
 
 services:
   eureka-server:

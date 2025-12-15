@@ -207,3 +207,5 @@ services:
 networks:
   microservices-network:
     driver: bridge
+  shared-network:
+    external: true
