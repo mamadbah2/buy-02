@@ -42,7 +42,7 @@ pipeline {
                 echo '🧹 Nettoyage de l\'espace de travail...'
                 sh '''
                     # Nettoyer seulement les conteneurs et images de l'ancien build
-                    docker-compose down -v --remove-orphans || true
+                    docker compose down -v --remove-orphans || true
                     docker images | grep "my_buy01_pipeline2" | grep -v "${IMAGE_VERSION}" | awk '{print $3}' | xargs -r docker rmi -f || true
                 '''
             }
@@ -205,12 +205,12 @@ pipeline {
                                 "MONGODB_DATABASE=${env.MONGODB_DATABASE}"
                             ]) {
                                 sh '''
-                                    docker-compose up -d
+                                    docker compose up -d
 
                                     # Attendre que les services soient prêts avec health checks
                                     echo "⏳ Attente du démarrage des services..."
                                     for i in {1..40}; do
-                                        if docker-compose ps | grep -E "(healthy|running)" | wc -l | grep -q 7; then
+                                        if docker compose ps | grep -E "(healthy|running)" | wc -l | grep -q 7; then
                                             echo "✅ Tous les services sont démarrés"
                                             break
                                         fi
@@ -219,12 +219,12 @@ pipeline {
                                     done
 
                                     # Vérifier que les services sont en bonne santé
-                                    docker-compose ps
+                                    docker compose ps
                                 '''
                             }
                         } finally {
-                            sh 'docker-compose logs --tail=50'
-                            sh 'docker-compose down -v --remove-orphans'
+                            sh 'docker compose logs --tail=50'
+                            sh 'docker compose down -v --remove-orphans'
                         }
                     }
                 }
@@ -288,21 +288,21 @@ pipeline {
                             "MONGODB_DATABASE=${env.MONGODB_DATABASE}"
                         ]) {
                             sh '''
-                                docker-compose -f docker-compose-deploy.yml down
-                                docker-compose -f docker-compose-deploy.yml pull
-                                docker-compose -f docker-compose-deploy.yml up -d
+                                docker compose -f docker-compose-deploy.yml down
+                                docker compose -f docker-compose-deploy.yml pull
+                                docker compose -f docker-compose-deploy.yml up -d
 
                                 # Vérifier l'état des conteneurs
                                 echo "⏳ Attente du démarrage..."
                                 for i in {1..20}; do
-                                    if docker-compose -f docker-compose-deploy.yml ps | grep -q "Up"; then
+                                    if docker compose -f docker-compose-deploy.yml ps | grep -q "Up"; then
                                         echo "✅ Services démarrés"
                                         break
                                     fi
                                     echo "Tentative $i/20..."
                                     sleep 3
                                 done
-                                docker-compose -f docker-compose-deploy.yml ps
+                                docker compose -f docker-compose-deploy.yml ps
                             '''
                         }
                     }
@@ -318,7 +318,7 @@ pipeline {
                         sh '''
                             # Attendre que tous les services soient en bonne santé
                             for i in {1..30}; do
-                                if docker-compose -f docker-compose-deploy.yml ps | grep -q "unhealthy"; then
+                                if docker compose -f docker-compose-deploy.yml ps | grep -q "unhealthy"; then
                                     echo "⏳ Attente de la santé des services... ($i/30)"
                                     sleep 10
                                 else
@@ -328,7 +328,7 @@ pipeline {
                             done
 
                             echo "❌ Timeout: certains services ne sont pas en bonne santé"
-                            docker-compose -f docker-compose-deploy.yml ps
+                            docker compose -f docker-compose-deploy.yml ps
                             exit 1
                         '''
                     }
@@ -368,9 +368,9 @@ pipeline {
                         try {
                             withEnv(["IMAGE_VERSION=${lastSuccessfulBuild.number}"]) {
                                 sh '''
-                                    docker-compose -f docker-compose-deploy.yml down
-                                    docker-compose -f docker-compose-deploy.yml pull
-                                    docker-compose -f docker-compose-deploy.yml up -d
+                                    docker compose -f docker-compose-deploy.yml down
+                                    docker compose -f docker-compose-deploy.yml pull
+                                    docker compose -f docker-compose-deploy.yml up -d
                                 '''
                             }
                             echo "✅ Rollback réussi vers la version ${lastSuccessfulBuild.number}"
