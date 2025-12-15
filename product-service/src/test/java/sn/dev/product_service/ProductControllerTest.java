@@ -3,6 +3,7 @@ package sn.dev.product_service;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
@@ -566,7 +567,7 @@ public class ProductControllerTest {
         product.setId("p1");
 
         Page<Product> productPage = new PageImpl<>(List.of(product));
-        when(productService.search(anyString(), any(Double.class), any(Double.class), any(Pageable.class))).thenReturn(productPage);
+        when(productService.search(anyString(), nullable(Double.class), nullable(Double.class), any(Pageable.class))).thenReturn(productPage);
         when(mediaServiceClient.getByProductId("p1"))
                 .thenReturn(ResponseEntity.ok(List.of(new Media("m1", "iphone.png"))));
 
@@ -586,7 +587,7 @@ public class ProductControllerTest {
         product.setId("p1");
 
         Page<Product> productPage = new PageImpl<>(List.of(product));
-        when(productService.search(any(String.class), anyDouble(), anyDouble(), any(Pageable.class))).thenReturn(productPage);
+        when(productService.search(nullable(String.class), anyDouble(), anyDouble(), any(Pageable.class))).thenReturn(productPage);
         when(mediaServiceClient.getByProductId("p1"))
                 .thenReturn(ResponseEntity.ok(List.of()));
 
@@ -629,7 +630,7 @@ public class ProductControllerTest {
     @WithMockUser
     void testSearch_NoResults() throws Exception {
         Page<Product> emptyPage = Page.empty();
-        when(productService.search(anyString(), any(Double.class), any(Double.class), any(Pageable.class))).thenReturn(emptyPage);
+        when(productService.search(nullable(String.class), nullable(Double.class), nullable(Double.class), any(Pageable.class))).thenReturn(emptyPage);
 
         mockMvc.perform(get("/api/products/search")
                         .param("q", "NonExistent"))

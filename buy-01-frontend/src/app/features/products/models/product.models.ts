@@ -27,6 +27,8 @@ export interface ProductPage extends PaginatedResponse<ProductModels> {}
 export interface ProductQueryParams {
   page?: number;
   size?: number;
+  sortBy?: string;
+  sortDirection?: string;
 }
 
 export interface ProductSearchParams {
