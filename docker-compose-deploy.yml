@@ -114,6 +114,32 @@ services:
     networks:
       - microservices-network
 
+  order-service:
+    <<: *spring-service-defaults
+    image: ${DOCKER_HUB_USER:-mamadbah2}/${PROJECT_NAME:-safe-zone}-order-service:${IMAGE_VERSION}
+    container_name: order-service-prod
+    ports:
+      - "8084:8084"
+    environment:
+      <<: *common-env
+      DOCKER_PRODUCT_SERVICE_URL: http://product-service:8082/api/products
+      DOCKER_USER_SERVICE_URL: http://user-service:8081/api/users
+      SPRING_PROFILES_ACTIVE: prod
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "curl", "-f", "http://localhost:8084/actuator/health"]
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      config-service:
+        condition: service_healthy
+      product-service:
+        condition: service_healthy
+      user-service:
+        condition: service_healthy
+    networks:
+      - microservices-network
+
   user-service:
     <<: *spring-service-defaults
     image: ${DOCKER_HUB_USER:-mamadbah2}/${PROJECT_NAME:-safe-zone}-user-service:${IMAGE_VERSION}
@@ -156,6 +182,8 @@ services:
       product-service:
         condition: service_healthy
       user-service:
+        condition: service_healthy
+      order-service:
         condition: service_healthy
     networks:
       - microservices-network
