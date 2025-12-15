@@ -100,7 +100,7 @@ services:
     environment:
       <<: *common-env
       DOCKER_MEDIA_SERVICE_URL: http://media-service:8083/api/media
-      ELASTICSEARCH_HOST: host.docker.internal
+      ELASTICSEARCH_HOST: elasticsearch
       ELASTICSEARCH_PORT: 9200
       SPRING_PROFILES_ACTIVE: prod
     healthcheck:
@@ -115,6 +115,7 @@ services:
         condition: service_healthy
     networks:
       - microservices-network
+      - shared-network
 
   order-service:
     <<: *spring-service-defaults
