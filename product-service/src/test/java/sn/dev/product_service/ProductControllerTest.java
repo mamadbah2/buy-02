@@ -572,7 +572,7 @@ public class ProductControllerTest {
                 .thenReturn(ResponseEntity.ok(List.of(new Media("m1", "iphone.png"))));
 
         mockMvc.perform(get("/api/products/search")
-                        .param("q", "iPhone"))
+                        .param("query", "iPhone"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content.length()").value(1))
                 .andExpect(jsonPath("$.content[0].name").value("iPhone 15"));
@@ -613,7 +613,7 @@ public class ProductControllerTest {
                 .thenReturn(ResponseEntity.ok(List.of(new Media("m1", "samsung.png"))));
 
         mockMvc.perform(get("/api/products/search")
-                        .param("q", "Samsung")
+                        .param("query", "Samsung")
                         .param("minPrice", "400.0")
                         .param("maxPrice", "500.0")
                         .param("page", "0")
@@ -633,7 +633,7 @@ public class ProductControllerTest {
         when(productService.search(nullable(String.class), nullable(Double.class), nullable(Double.class), any(Pageable.class))).thenReturn(emptyPage);
 
         mockMvc.perform(get("/api/products/search")
-                        .param("q", "NonExistent"))
+                        .param("query", "NonExistent"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content.length()").value(0))
                 .andExpect(jsonPath("$.totalElements").value(0));
