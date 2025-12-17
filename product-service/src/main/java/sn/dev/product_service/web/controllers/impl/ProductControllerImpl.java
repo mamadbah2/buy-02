@@ -149,7 +149,7 @@ public class ProductControllerImpl implements ProductController {
 
     @Override
     public ResponseEntity<Page<ProductResponseDTO>> search(
-        String q,
+        String query,
         Double minPrice,
         Double maxPrice,
         int page,
@@ -158,7 +158,7 @@ public class ProductControllerImpl implements ProductController {
         System.out.println(
             String.format(
                 "SEARCH products - query: '%s', minPrice: %s, maxPrice: %s, page: %d, size: %d",
-                q, minPrice, maxPrice, page, size
+                query, minPrice, maxPrice, page, size
             )
         );
 
@@ -166,7 +166,7 @@ public class ProductControllerImpl implements ProductController {
         Pageable pageable = PageRequest.of(page, size);
 
         // Rechercher les produits
-        Page<Product> productsPage = productService.search(q, minPrice, maxPrice, pageable);
+        Page<Product> productsPage = productService.search(query, minPrice, maxPrice, pageable);
 
         // Mapper vers ProductResponseDTO
         Page<ProductResponseDTO> responsePage = productsPage.map(product -> {

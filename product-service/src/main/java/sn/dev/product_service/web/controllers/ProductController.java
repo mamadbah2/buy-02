@@ -43,7 +43,7 @@ public interface ProductController {
 
     @GetMapping("/search")
     ResponseEntity<Page<ProductResponseDTO>> search(
-            @RequestParam(required = false) String q,
+            @RequestParam(required = false) String query,
             @RequestParam(required = false) Double minPrice,
             @RequestParam(required = false) Double maxPrice,
             @RequestParam(defaultValue = "0") int page,

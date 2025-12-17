@@ -76,6 +76,7 @@ export class ProductListingComponent implements OnInit {
   }
 
   private loadProducts(page: number = this.pagination.currentPage) {
+    console.log('ProductListingComponent: loadProducts called. Page:', page, 'SearchTerm:', this.searchTerm);
     this.isLoading = true;
     const safePage = Math.max(0, page);
     const commonParams = {
@@ -84,6 +85,8 @@ export class ProductListingComponent implements OnInit {
     };
 
     const hasSearch = this.searchTerm && this.searchTerm.trim().length > 0;
+    console.log('ProductListingComponent: hasSearch:', hasSearch);
+
     const request$ = hasSearch
       ? this.productService.searchProducts(
           { query: this.searchTerm.trim() },
@@ -94,7 +97,7 @@ export class ProductListingComponent implements OnInit {
     request$
       .subscribe({
         next: (response) => {
-          console.log("Products loaded successfully:");
+          console.log("Products loaded successfully:", response);
           this.pagination = {
             totalElements: response.totalElements,
             totalPages: response.totalPages,
@@ -104,7 +107,8 @@ export class ProductListingComponent implements OnInit {
             isLast: response.last,
           };
           this.allProducts = response.content ?? [];
-          this.filteredProducts = response.content ?? [];
+          this.filteredProducts = [...this.allProducts];
+          this.applyLocalSort();
           this.isLoading = false;
         },
         error: (err) => {
@@ -189,7 +193,19 @@ export class ProductListingComponent implements OnInit {
       this.sortDirection = sortBy === "name" ? "ASC" : "DESC";
     }
 
-    this.loadProducts(0);
+    this.applyLocalSort();
+  }
+
+  private applyLocalSort() {
+    if (!this.selectedSort) return;
+
+    this.filteredProducts.sort((a, b) => 
+      this.compareProducts(a, b, this.selectedSort as "name" | "price")
+    );
+    
+    if (this.sortDirection === "DESC") {
+      this.filteredProducts.reverse();
+    }
   }
 
   // Method to refresh products
@@ -212,6 +228,7 @@ export class ProductListingComponent implements OnInit {
 
   // Search functionality
   onSearch(term: string) {
+    console.log('ProductListingComponent: onSearch called with term:', term);
     this.searchTerm = term;
     // Reset to first page when searching
     this.loadProducts(0);

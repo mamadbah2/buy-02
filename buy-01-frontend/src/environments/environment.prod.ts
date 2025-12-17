@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://api-gateway:8080'
+  apiUrl: 'https://vps-77043236.vps.ovh.ca:5050'
 };

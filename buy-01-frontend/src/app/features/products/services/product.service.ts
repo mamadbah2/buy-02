@@ -53,7 +53,7 @@ export class ProductService {
         httpParams = httpParams.set(key, value.toString());
       }
     });
-
+    console.log('Search Params:', search);
     // Add search-specific params
     if (search.query?.trim()) {
       httpParams = httpParams.set("query", search.query.trim());
