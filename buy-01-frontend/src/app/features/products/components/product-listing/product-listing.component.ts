@@ -107,7 +107,8 @@ export class ProductListingComponent implements OnInit {
             isLast: response.last,
           };
           this.allProducts = response.content ?? [];
-          this.filteredProducts = response.content ?? [];
+          this.filteredProducts = [...this.allProducts];
+          this.applyLocalSort();
           this.isLoading = false;
         },
         error: (err) => {
@@ -192,7 +193,19 @@ export class ProductListingComponent implements OnInit {
       this.sortDirection = sortBy === "name" ? "ASC" : "DESC";
     }
 
-    this.loadProducts(0);
+    this.applyLocalSort();
+  }
+
+  private applyLocalSort() {
+    if (!this.selectedSort) return;
+
+    this.filteredProducts.sort((a, b) => 
+      this.compareProducts(a, b, this.selectedSort as "name" | "price")
+    );
+    
+    if (this.sortDirection === "DESC") {
+      this.filteredProducts.reverse();
+    }
   }
 
   // Method to refresh products
