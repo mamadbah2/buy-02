@@ -15,6 +15,7 @@
       (blur)="onBlur()"
       class="search-input"
     >
+    <app-search-voice (search)="onVoiceSearch($event)" class="mx-2"></app-search-voice>
     <button class="search-btn" (click)="onSearch()">
       Search
     </button>
