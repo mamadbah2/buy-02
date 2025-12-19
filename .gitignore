@@ -1,3 +1,4 @@
 .vscode
 /node_modules
 last_successful_build.txt
+./stt-service/venv
